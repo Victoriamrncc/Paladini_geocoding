@@ -1,0 +1,11 @@
+original_address,latitude,longitude,reverse_geocoded_address,distance_meters,validation_status,timestamp,error_message
+Cerrito 628,-34.6010633,-58.3830937,"Teatro Colón, Teatro Colón, Cerrito 628, C1010 Cdad. Autónoma de Buenos Aires, Argentina",23.59,SUCCESS,2026-05-12 17:56:31,
+Balcarce 50,-34.608181,-58.3705941,"Balcarce 50, C1086 Cdad. Autónoma de Buenos Aires, Argentina",0.0,SUCCESS,2026-05-12 17:56:38,
+Av. del Libertador 1473,-34.5840199,-58.392933,"Av. del Libertador 1473, C1425 Cdad. Autónoma de Buenos Aires, Argentina",0.0,SUCCESS,2026-05-12 17:56:44,
+Av. Corrientes 1530,-34.6043436,-58.3885328,"Av. Corrientes 1529, C1042AAO Cdad. Autónoma de Buenos Aires, Argentina",6.01,SUCCESS,2026-05-12 17:56:51,
+Av. Figueroa Alcorta 3415,-34.5768555,-58.40333700000001,"San Martín de Tours 3100, C1425DNE Cdad. Autónoma de Buenos Aires, Argentina",12.43,SUCCESS,2026-05-12 17:56:56,
+Av. del Libertador 1902,-34.5826731,-58.4010755,"Av. del Libertador 1902, C1425AAS, C1425AAS Cdad. Autónoma de Buenos Aires, Argentina",0.0,SUCCESS,2026-05-12 17:57:03,
+Santa Fe 581,-32.9476327,-60.6309132,"Córdoba 547, S2000AWD Rosario, Santa Fe, Argentina",4.18,SUCCESS,2026-05-12 17:57:09,
+Buenos Aires 711,-32.947091,-60.632427,"Buenos Aires 711, S2000CEB Rosario, Santa Fe, Argentina",0.0,SUCCESS,2026-05-12 17:57:15,
+Av. Pellegrini 2202,-32.9538751,-60.65660020000001,"Barrio Alberdi 1699, S2005 Rosario, Santa Fe, Argentina",4.33,SUCCESS,2026-05-12 17:57:20,
+Caseros 549,-24.7899265,-65.4105423,"Caseros 553, A4400 Salta, Argentina",4.49,SUCCESS,2026-05-12 17:57:27,

@@ -1,0 +1,4 @@
+fecha_ejecucion,archivo,registros_recibidos,registros_procesados,exitosos,fallidos,tiempo_segundos,archivo_log
+2026-05-13 20:51:33,Book2.csv,21,21,17,4,118.23,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-13_205133.csv
+2026-05-13 21:21:45,Book2.csv,21,21,17,4,112.27,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-13_212145.csv
+2026-05-13 21:39:24,Book2.csv,21,21,17,4,118.3,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-13_213924.csv
