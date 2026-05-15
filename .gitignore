@@ -1,3 +1,5 @@
 .env
 __pycache__/
 *.pyc
+logs/log_ejecucion_*.csv
+resultados/resultado_geocodificacion_*.csv

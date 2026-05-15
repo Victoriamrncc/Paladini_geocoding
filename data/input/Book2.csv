@@ -1,22 +1,7 @@
 ID_Cliente;Nombre;Rubro;Dirección;Localidad;Provincia;Sucursal_asignada
 CLT-00001;Comercial Maidana e Hijos SAS;Almacén;Av. Alsina 1779;Córdoba;Córdoba;Córdoba Capital
 CLT-00002;Distribuidora Moreno SH;Supermercado;Calle 9 de Julio 3682;Tinogasta;Catamarca;Tucumán (NOA)
-CLT-00003;Kiosco Ruiz Comercial Unipersonal;Supermercado;Av. Jujuy 9754;Posadas;Misiones;Santo Tomé (Litoral)
+CLT-00003;Kiosco Ruiz Comercial Unipersonal;Supermercado; ;Posadas;Misiones;Santo Tomé (Litoral)
 CLT-00004;Mayorista Figueroa & Asociados SH;Almacén;Pasaje Urquiza 3627;Mendoza;Mendoza;Mendoza (Cuyo)
 CLT-00005;Distribuidora Fernández;Gran Cadena;Pasaje Catamarca 9991;Avellaneda;Buenos Aires;Bahía Blanca (SEA)
 CLT-00006;Almacén Cabrera Comercial SRL;Almacén;Calle Río Negro 4903;La Plata;Buenos Aires;Bahía Blanca (SEA)
-CLT-00007;Autoservicio Mansilla;Almacén;Calle Roque Sáenz Peña 3833;San Nicolás;Buenos Aires;Rosario
-CLT-00008;Casa Pérez Group SH;Distribuidor;Boulevard San Luis 6077;San Salvador de Jujuy;Jujuy;Tucumán (NOA)
-CLT-00009;Casa Quiroga;Supermercado;Camino San Luis 2903;Guaymallén;Mendoza;Mendoza (Cuyo)
-CLT-00010;Mayorista Silva Group SH;Almacén;Camino Francia 5413;Tartagal;Salta;Tucumán (NOA)
-CLT-00011;Casa López Comercial SAS;Distribuidor;Pasaje Mitre 3556;La Plata;Buenos Aires;Bahía Blanca (SEA)
-CLT-00012;Autoservicio Ramírez Comercial SH;Gran Cadena;Boulevard Urquiza 4439;Toay;La Pampa;Martínez (BA)
-CLT-00013;Hiper Aguirre Comercial Unipersonal;Almacén;Pasaje Francia 2366;Chimbas;San Juan;Mendoza (Cuyo)
-CLT-00014;Comercial Sánchez y Cía SA;Almacén;Boulevard Mendoza 1140;Mar del Plata;Buenos Aires;Bahía Blanca (SEA)
-CLT-00015;Almacén Ferreyra SAS;Almacén;Calle Ameghino 8897;San Nicolás;Buenos Aires;Rosario
-CLT-00016;Distribuidora Molina y Cía SH;Distribuidor;Boulevard San Martín 4415;Avellaneda;Buenos Aires;Bahía Blanca (SEA)
-CLT-00017;Kiosco Pérez e Hijos SAS;Almacén;Av. Tucumán 2746;Bahía Blanca;Buenos Aires;Bahía Blanca (SEA)
-CLT-00018;Comercial Peralta Center SAS;Almacén;Calle Moreno 6047;Reconquista;Santa Fe;Santo Tomé (Litoral)
-CLT-00019;Casa Martínez;Supermercado;Calle Reconquista 8062;Villa María;Córdoba;Córdoba Capital
-CLT-00020;Mayorista Romero y Cía SH;Almacén;Pasaje Misiones 7032;Quilmes;Buenos Aires;Bahía Blanca (SEA)
-CLT-00021;Super Correa Center SAS;Almacén;Camino Jujuy 2082;Yerba Buena;Tucumán;Tucumán (NOA)

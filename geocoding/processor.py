@@ -173,6 +173,23 @@ class GeocodingProcessor:
             if p and str(p).lower() != "nan"
         )
 
+    @staticmethod
+    def _campos_vacios(row):
+        """
+        Detecta qué campos de geocoding están vacíos o tienen valor 'nan'.
+        Retorna lista de nombres de columna originales vacíos, o [] si todo está completo.
+        """
+        campos = {
+            "Dirección": row["dir_original"],
+            "Localidad":  row["localidad_original"],
+            "Provincia":  row["provincia_original"],
+        }
+        return [
+            nombre
+            for nombre, valor in campos.items()
+            if not valor or str(valor).lower() == "nan"
+        ]
+
     # ------------------------------------------------------------------
     # Flujo por fila
     # ------------------------------------------------------------------
@@ -196,6 +213,27 @@ class GeocodingProcessor:
         timestamp        = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         self._log(f"[{numero_fila}/{total_rows}] {input_query[:70]}...")
+
+        # ----------------------------------------------------------
+        # PASO 0 — Validación de campos vacíos
+        # ----------------------------------------------------------
+        campos_faltantes = self._campos_vacios(row)
+        if campos_faltantes:
+            faltantes_str = ", ".join(campos_faltantes)
+            mensaje = f"Campos vacíos: {faltantes_str}"
+            self._log(f"  => ERROR: {mensaje}")
+            return {
+                "id_cliente":               id_cliente,
+                "original_address":         original_address,
+                "input_query":              input_query,
+                "latitude":                 None,
+                "longitude":                None,
+                "reverse_geocoded_address": None,
+                "distance_meters":          None,
+                "validation_status":        "ERROR",
+                "error_message":            mensaje,
+                "timestamp":                timestamp,
+            }
 
         # Estado acumulado — se completa paso a paso.
         # Los valores None indican que ese paso aún no se alcanzó.

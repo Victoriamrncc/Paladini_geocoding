@@ -16,6 +16,8 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 # Distancia máxima aceptable entre (lat1, lon1) y (lat2, lon2) para considerar
 # una dirección como válida. Fuente de verdad del sistema.
 MAX_DISTANCE_METERS = 30
+FAILED_MINIMO_MAX = 50
+FAILED_MEDIO_MAX  = 100
 
 # ---------------------------------------------------------------------------
 # Red

@@ -51,8 +51,8 @@ def render_ejecucion():
     st.header("Procesamiento de Direcciones")
 
     uploaded_file = st.file_uploader(
-        "Cargar archivo CSV o Excel",
-        type=["csv", "xlsx", "xls"],
+        "Cargar archivo CSV",
+        type=["csv"],
     )
 
     if uploaded_file is not None:
@@ -110,7 +110,7 @@ def render_ejecucion():
                 )
 
     else:
-        st.info("Subí un archivo CSV o Excel para comenzar.")
+        st.info("Subí un archivo CSV para comenzar.")
         # Mostrar logs fuera del bloque de archivo (si persisten en sesión)
         if st.session_state.log_text:
             with st.expander("Logs de la última ejecución", expanded=False):
@@ -161,6 +161,7 @@ def _render_resultados(resumen):
 
     col3.metric("✅ SUCCESS", n_success)
     col4.metric("⚠️ FAILED",  n_failed)
+    col5.metric("❌ ERROR",   n_error)
 
     st.caption(f"Tiempo total: {resumen['tiempo']}s  |  Log: `{resumen['log_file']}`")
 

@@ -1,5 +1,5 @@
 import math
-from .config import MAX_DISTANCE_METERS
+from .config import MAX_DISTANCE_METERS, FAILED_MINIMO_MAX, FAILED_MEDIO_MAX
 
 
 # ---------------------------------------------------------------------------
@@ -21,6 +21,28 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 # ---------------------------------------------------------------------------
+# Severidad para resultados FAILED
+# ---------------------------------------------------------------------------
+
+def _severidad_failed(distancia):
+    """
+    Determina la etiqueta de severidad para un resultado FAILED según los
+    umbrales definidos en config.py.
+
+    Rangos:
+        MAX_DISTANCE_METERS  < distancia <= FAILED_MINIMO_MAX  → "error mínimo"
+        FAILED_MINIMO_MAX    < distancia <= FAILED_MEDIO_MAX   → "error medio"
+        distancia            > FAILED_MEDIO_MAX                → "error grave"
+    """
+    if distancia <= FAILED_MINIMO_MAX:
+        return "error mínimo"
+    elif distancia <= FAILED_MEDIO_MAX:
+        return "error medio"
+    else:
+        return "error grave"
+
+
+# ---------------------------------------------------------------------------
 # Validación geográfica
 # ---------------------------------------------------------------------------
 
@@ -34,7 +56,9 @@ def validar_coordenadas(lat1, lon1, lat2, lon2):
     Retorna dict con:
         validation_status   "SUCCESS" | "FAILED"
         distance_meters     float — distancia calculada, redondeada a 2 decimales
-        error_message       str | None — solo presente si FAILED
+        error_message       str | None
+                              None          → SUCCESS
+                              "error mínimo / medio / grave + detalle" → FAILED
     """
     distancia = round(haversine(lat1, lon1, lat2, lon2), 2)
 
@@ -45,11 +69,13 @@ def validar_coordenadas(lat1, lon1, lat2, lon2):
             "error_message":     None,
         }
     else:
+        severidad = _severidad_failed(distancia)
         return {
             "validation_status": "FAILED",
             "distance_meters":   distancia,
             "error_message": (
-                f"Distancia geográfica ({distancia:.1f}m) "
+                f"{severidad.capitalize()} — "
+                f"distancia geográfica ({distancia:.1f}m) "
                 f"supera el umbral permitido ({MAX_DISTANCE_METERS}m)."
             ),
         }
