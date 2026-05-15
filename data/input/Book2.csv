@@ -1,7 +1,0 @@
-ID_Cliente;Nombre;Rubro;Dirección;Localidad;Provincia;Sucursal_asignada
-CLT-00001;Comercial Maidana e Hijos SAS;Almacén;Av. Alsina 1779;Córdoba;Córdoba;Córdoba Capital
-CLT-00002;Distribuidora Moreno SH;Supermercado;Calle 9 de Julio 3682;Tinogasta;Catamarca;Tucumán (NOA)
-CLT-00003;Kiosco Ruiz Comercial Unipersonal;Supermercado; ;Posadas;Misiones;Santo Tomé (Litoral)
-CLT-00004;Mayorista Figueroa & Asociados SH;Almacén;Pasaje Urquiza 3627;Mendoza;Mendoza;Mendoza (Cuyo)
-CLT-00005;Distribuidora Fernández;Gran Cadena;Pasaje Catamarca 9991;Avellaneda;Buenos Aires;Bahía Blanca (SEA)
-CLT-00006;Almacén Cabrera Comercial SRL;Almacén;Calle Río Negro 4903;La Plata;Buenos Aires;Bahía Blanca (SEA)
