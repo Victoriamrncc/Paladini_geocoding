@@ -1,0 +1,5 @@
+fecha_ejecucion,archivo,registros_recibidos,registros_procesados,exitosos,fallidos,tiempo_segundos,archivo_log
+2026-05-14 22:37:08,Book2.csv,6,6,4,2,24.95,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-14_223708.csv
+2026-05-27 18:28:06,Book2 (1).csv,6,6,0,6,6.2,C:\geocoding\Paladini_geocoding-main\Paladini_geocoding-main\logs\log_ejecucion_2026-05-27_182806.csv
+2026-05-27 19:36:09,Book2 (1).csv,6,6,4,2,27.02,C:\geocoding\Paladini_geocoding-main\Paladini_geocoding-main\logs\log_ejecucion_2026-05-27_193609.csv
+2026-05-27 19:40:57,Book2 (1).csv,6,6,4,2,25.09,C:\geocoding\Paladini_geocoding-main\Paladini_geocoding-main\logs\log_ejecucion_2026-05-27_194057.csv
