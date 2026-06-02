@@ -1,2 +1,9 @@
 fecha_ejecucion,archivo,registros_recibidos,registros_procesados,exitosos,fallidos,tiempo_segundos,archivo_log
 2026-05-14 22:37:08,Book2.csv,6,6,4,2,24.95,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-14_223708.csv
+2026-05-14 22:42:46,Book2.csv,6,6,4,2,25.6,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-14_224246.csv
+2026-05-31 14:43:07,Book2.csv,6,6,4,2,28.03,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-31_144307.csv
+2026-05-31 15:09:13,Book2.csv,6,6,4,2,26.07,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-05-31_150913.csv
+2026-06-02 14:31:08,Book2.csv,6,6,4,2,27.46,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-06-02_143108.csv
+2026-06-02 14:43:34,Book2.csv,6,6,4,2,25.02,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-06-02_144334.csv
+2026-06-02 14:58:25,Book2.csv,6,6,4,2,26.23,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-06-02_145825.csv
+2026-06-02 15:07:46,Book2.csv,6,6,4,2,24.62,C:\Users\Victo\OneDrive\Documentos\Proyecto\Sprint 3\logs\log_ejecucion_2026-06-02_150746.csv

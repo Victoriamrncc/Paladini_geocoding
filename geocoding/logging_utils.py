@@ -85,6 +85,10 @@ class ExecutionLogger:
         # --- Resultado final (output del spec) ---
         self._resultados.append({
             "id_cliente":              record.get("id_cliente"),
+            "nombre":                  record.get("nombre"),
+            "rubro":                   record.get("rubro"),
+            "sucursal_asignada":       record.get("sucursal_asignada"),
+            "provincia":               record.get("provincia"),
             "original_address":        record.get("original_address"),
             "latitude":                record.get("latitude"),
             "longitude":               record.get("longitude"),
@@ -102,21 +106,32 @@ class ExecutionLogger:
     def end_and_save(self):
         """
         Persiste logs, resultados e histórico.
+        Cada escritura es independiente: el fallo de un archivo no impide
+        que los demás se escriban ni que el resumen se retorne.
         Retorna dict de resumen para consumo de processor.py y app.py.
+        La clave 'errores_escritura' contiene una lista vacía si todo fue OK,
+        o una lista de strings descriptivos por cada escritura fallida.
         """
         tiempo_total = round(
             (datetime.now() - self._start_time).total_seconds(), 2
         )
+        errores_escritura = []
 
-        # Log detallado
-        pd.DataFrame(self._logs).to_csv(self.log_file, index=False, encoding="utf-8")
+        # --- Log detallado (debugging) ---
+        try:
+            pd.DataFrame(self._logs).to_csv(self.log_file, index=False, encoding="utf-8")
+        except Exception as e:
+            errores_escritura.append(f"log_file: {type(e).__name__}: {e}")
 
-        # Resultados finales
-        pd.DataFrame(self._resultados).to_csv(
-            self.resultados_file, index=False, encoding="utf-8"
-        )
+        # --- Resultados finales ---
+        try:
+            pd.DataFrame(self._resultados).to_csv(
+                self.resultados_file, index=False, encoding="utf-8"
+            )
+        except Exception as e:
+            errores_escritura.append(f"resultados_file: {type(e).__name__}: {e}")
 
-        # Histórico acumulativo
+        # --- Histórico acumulativo ---
         resumen_hist = {
             "fecha_ejecucion":      self._start_time.strftime("%Y-%m-%d %H:%M:%S"),
             "archivo":              self.filename,
@@ -128,23 +143,25 @@ class ExecutionLogger:
             "archivo_log":          self.log_file,
         }
 
-        df_nuevo = pd.DataFrame([resumen_hist])
-
-        if os.path.exists(self.historico_file):
-            df_hist = pd.read_csv(self.historico_file)
-            df_hist = pd.concat([df_hist, df_nuevo], ignore_index=True)
-        else:
-            df_hist = df_nuevo
-
-        df_hist.to_csv(self.historico_file, index=False, encoding="utf-8")
+        try:
+            df_nuevo = pd.DataFrame([resumen_hist])
+            if os.path.exists(self.historico_file):
+                df_hist = pd.read_csv(self.historico_file)
+                df_hist = pd.concat([df_hist, df_nuevo], ignore_index=True)
+            else:
+                df_hist = df_nuevo
+            df_hist.to_csv(self.historico_file, index=False, encoding="utf-8")
+        except Exception as e:
+            errores_escritura.append(f"historico_file: {type(e).__name__}: {e}")
 
         # Resumen para processor.py y app.py
         return {
-            "recibidos": self.total_registros,
-            "procesados": self.procesados,
-            "exitosos":   self.exitosos,
-            "errores":    self.fallidos,
-            "tiempo":     tiempo_total,
-            "log_file":   self.log_file,
-            "res_file":   self.resultados_file,
+            "recibidos":         self.total_registros,
+            "procesados":        self.procesados,
+            "exitosos":          self.exitosos,
+            "errores":           self.fallidos,
+            "tiempo":            tiempo_total,
+            "log_file":          self.log_file,
+            "res_file":          self.resultados_file,
+            "errores_escritura": errores_escritura,
         }

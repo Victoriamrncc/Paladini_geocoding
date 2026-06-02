@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+import folium
+from streamlit_folium import st_folium
 
 from geocoding.processor import GeocodingProcessor
 from geocoding.config import LOGS_DIR, RESULTADOS_DIR
@@ -35,12 +37,14 @@ def main():
     if "res_file" not in st.session_state: st.session_state.res_file = None
 
     st.sidebar.title("Navegación")
-    seccion = st.sidebar.radio("", ["Ejecución", "Historial"])
+    seccion = st.sidebar.radio("", ["Ejecución", "Historial", "Visor"])
 
     if seccion == "Ejecución":
         render_ejecucion()
-    else:
+    elif seccion == "Historial":
         render_historial()
+    else:
+        render_visor()
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +255,186 @@ def render_historial():
             )
         else:
             st.warning(f"No se encontró el archivo de resultados en disco: `{archivo_a_mostrar}`")
+
+
+# ---------------------------------------------------------------------------
+# Sección: Visor
+# ---------------------------------------------------------------------------
+
+# Configuración de rubros: ícono Font Awesome y color del pin.
+# Cualquier rubro no listado aquí cae en el fallback.
+_RUBRO_CONFIG = {
+    "Supermercado": {"icon": "shopping-cart", "color": "blue"},
+    "Almacén":      {"icon": "home",          "color": "green"},
+    "Gran Cadena":  {"icon": "building",      "color": "red"},
+}
+_RUBRO_FALLBACK = {"icon": "map-marker", "color": "gray"}
+
+
+def render_visor():
+    st.header("Visor de Direcciones")
+
+    uploaded_file = st.file_uploader(
+        "Cargar CSV de resultados",
+        type=["csv"],
+        key="visor_uploader",
+    )
+
+    if uploaded_file is None:
+        st.info("Subí un CSV de resultados para visualizar los puntos en el mapa.")
+        return
+
+    try:
+        df = pd.read_csv(uploaded_file)
+    except Exception as e:
+        st.error(f"No se pudo leer el archivo: {e}")
+        return
+
+    # Verificar columnas mínimas necesarias
+    cols_necesarias = {"latitude", "longitude", "validation_status"}
+    faltantes = cols_necesarias - set(df.columns)
+    if faltantes:
+        st.error(f"El CSV no tiene las columnas requeridas: {', '.join(sorted(faltantes))}")
+        return
+
+    # Descartar filas sin coordenadas válidas
+    df_geo = df.dropna(subset=["latitude", "longitude"]).copy()
+    df_sin_coords = df[df["latitude"].isna() | df["longitude"].isna()]
+
+    if df_geo.empty:
+        st.warning("Ninguna fila tiene coordenadas válidas para mostrar en el mapa.")
+        return
+
+    # ------------------------------------------------------------------
+    # Sidebar — filtros
+    # ------------------------------------------------------------------
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### Filtros del visor")
+
+    # Filtro por provincia
+    if "provincia" in df_geo.columns:
+        provincias_disponibles = sorted(df_geo["provincia"].dropna().unique().tolist())
+        provincias_sel = st.sidebar.multiselect(
+            "Provincia",
+            options=provincias_disponibles,
+            default=provincias_disponibles,
+            key="visor_provincia_filter",
+        )
+    else:
+        provincias_sel = None
+
+    # Filtro por validation_status
+    estados_disponibles = sorted(df_geo["validation_status"].dropna().unique().tolist())
+    estados_sel = st.sidebar.multiselect(
+        "Estado",
+        options=estados_disponibles,
+        default=estados_disponibles,
+        key="visor_estado_filter",
+    )
+
+    # Filtro por rubro
+    if "rubro" in df_geo.columns:
+        rubros_disponibles = sorted(df_geo["rubro"].dropna().unique().tolist())
+        rubros_sel = st.sidebar.multiselect(
+            "Rubro",
+            options=rubros_disponibles,
+            default=rubros_disponibles,
+            key="visor_rubro_filter",
+        )
+    else:
+        rubros_sel = None
+
+    # ------------------------------------------------------------------
+    # Aplicar filtros
+    # ------------------------------------------------------------------
+    df_filtrado = df_geo.copy()
+
+    if provincias_sel is not None:
+        df_filtrado = df_filtrado[df_filtrado["provincia"].isin(provincias_sel)]
+
+    df_filtrado = df_filtrado[df_filtrado["validation_status"].isin(estados_sel)]
+
+    if rubros_sel is not None:
+        df_filtrado = df_filtrado[df_filtrado["rubro"].isin(rubros_sel)]
+
+    # ------------------------------------------------------------------
+    # Métricas
+    # ------------------------------------------------------------------
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("Total en CSV",      len(df))
+    col2.metric("Con coordenadas",   len(df_geo))
+    col3.metric("✅ SUCCESS",        int((df_filtrado["validation_status"] == "SUCCESS").sum()))
+    col4.metric("⚠️ FAILED",         int((df_filtrado["validation_status"] == "FAILED").sum()))
+    col5.metric("❌ ERROR",          int((df_filtrado["validation_status"] == "ERROR").sum()))
+
+    if len(df_sin_coords) > 0:
+        st.caption(f"ℹ️ {len(df_sin_coords)} fila(s) sin coordenadas no se muestran en el mapa.")
+
+    if df_filtrado.empty:
+        st.warning("No hay puntos para mostrar con los filtros actuales.")
+        return
+
+    # ------------------------------------------------------------------
+    # Mapa Folium
+    # ------------------------------------------------------------------
+    centro_lat = df_filtrado["latitude"].mean()
+    centro_lon = df_filtrado["longitude"].mean()
+
+    mapa = folium.Map(
+        location=[centro_lat, centro_lon],
+        zoom_start=10,
+        tiles="CartoDB positron",
+    )
+
+    for _, row in df_filtrado.iterrows():
+        rubro = str(row.get("rubro", "")) if "rubro" in df_filtrado.columns else ""
+        cfg   = _RUBRO_CONFIG.get(rubro, _RUBRO_FALLBACK)
+
+        # Popup con info relevante
+        id_cli    = row.get("id_cliente",      "—")
+        nombre    = row.get("nombre",          "—") if "nombre"    in df_filtrado.columns else "—"
+        direccion = row.get("original_address","—") if "original_address" in df_filtrado.columns else "—"
+        status    = row.get("validation_status","—")
+        distancia = row.get("distance_meters", "—") if "distance_meters" in df_filtrado.columns else "—"
+        provincia = row.get("provincia",       "—") if "provincia"  in df_filtrado.columns else "—"
+
+        popup_html = f"""
+        <div style="font-family:sans-serif; font-size:13px; min-width:200px;">
+            <b>{nombre}</b><br>
+            <span style="color:#666">ID: {id_cli}</span><br>
+            <hr style="margin:4px 0">
+            📍 {direccion}<br>
+            🏷️ {rubro or '—'}<br>
+            🗺️ {provincia}<br>
+            <hr style="margin:4px 0">
+            Estado: <b>{status}</b><br>
+            Distancia: {f"{distancia}m" if distancia != "—" else "—"}
+        </div>
+        """
+
+        folium.Marker(
+            location=[row["latitude"], row["longitude"]],
+            popup=folium.Popup(popup_html, max_width=280),
+            tooltip=f"{nombre} — {rubro or 'Sin rubro'}",
+            icon=folium.Icon(color=cfg["color"], icon=cfg["icon"], prefix="fa"),
+        ).add_to(mapa)
+
+    st_folium(mapa, use_container_width=True, height=550, returned_objects=[])
+
+    # ------------------------------------------------------------------
+    # Tabla resumen (colapsable)
+    # ------------------------------------------------------------------
+    with st.expander("Ver tabla de resultados filtrados", expanded=False):
+        st.dataframe(df_filtrado, use_container_width=True)
+
+        csv_bytes = df_filtrado.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Descargar filtrado (CSV)",
+            data=csv_bytes,
+            file_name=f"visor_filtrado_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            key="visor_download",
+        )
 
 
 # ---------------------------------------------------------------------------

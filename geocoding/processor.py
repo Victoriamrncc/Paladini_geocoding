@@ -25,6 +25,12 @@ def _leer_csv_robusto(filepath):
     raise ValueError(f"No se pudo leer el CSV con ninguno de los encodings probados: {encodings}")
 
 
+# Placeholders que se tratan como campo vacío en la detección de valores faltantes.
+# Cubre: celdas vacías (→ "nan" vía astype(str)), None (→ "none"), y abreviaturas
+# comunes en archivos CSV argentinos/latinoamericanos.
+_VALORES_VACIOS = frozenset({"nan", "none", "n/a", "n/d", "nd", "s/d", "-", ""})
+
+
 class GeocodingProcessor:
     """
     Coordina el flujo completo de validación geográfica para cada fila del CSV.
@@ -144,6 +150,7 @@ class GeocodingProcessor:
         """
         Normaliza el DataFrame de entrada:
         - Renombra columnas a nombres internos
+        - Preserva la dirección original tal como viene del CSV
         - Construye la query que se enviará a la API
         """
         df = df.copy()
@@ -153,7 +160,20 @@ class GeocodingProcessor:
         df["localidad_original"] = df["Localidad"].astype(str).str.strip()
         df["provincia_original"] = df["Provincia"].astype(str).str.strip()
 
+        # Columnas originales extra — se propagan al CSV de resultados tal cual
+        for col in ("Nombre", "Rubro", "Sucursal_asignada"):
+            if col in df.columns:
+                df[col] = df[col].astype(str).str.strip()
+
         df["input_query"] = df.apply(self._construir_query, axis=1)
+
+        # Dirección tal como la ingresó el usuario, sin el sufijo "Argentina"
+        # que agrega _construir_query para mejorar el geocoding.
+        df["original_address"] = (
+            df["dir_original"] + ", " +
+            df["localidad_original"] + ", " +
+            df["provincia_original"]
+        )
         return df
 
     @staticmethod
@@ -176,7 +196,11 @@ class GeocodingProcessor:
     @staticmethod
     def _campos_vacios(row):
         """
-        Detecta qué campos de geocoding están vacíos o tienen valor 'nan'.
+        Detecta qué campos de geocoding están vacíos o no contienen un valor útil.
+        Considera vacíos: strings en blanco y placeholders comunes en archivos CSV
+        argentinos/latinoamericanos (nan, none, n/a, n/d, nd, s/d, -).
+        Nota: después de _preparar_dataframe los valores son siempre strings
+        (astype(str) convierte NaN float a "nan" y None a "None").
         Retorna lista de nombres de columna originales vacíos, o [] si todo está completo.
         """
         campos = {
@@ -187,7 +211,7 @@ class GeocodingProcessor:
         return [
             nombre
             for nombre, valor in campos.items()
-            if not valor or str(valor).lower() == "nan"
+            if not str(valor).strip() or str(valor).strip().lower() in _VALORES_VACIOS
         ]
 
     # ------------------------------------------------------------------
@@ -205,25 +229,55 @@ class GeocodingProcessor:
         Estados posibles en el record resultante:
             SUCCESS  — distancia <= MAX_DISTANCE_METERS
             FAILED   — distancia >  MAX_DISTANCE_METERS  (datos completos conservados)
-            ERROR    — fallo técnico en API              (datos parciales según paso fallido)
+            ERROR    — fallo técnico en API o excepción inesperada
         """
-        id_cliente       = row["id_cliente"]
-        original_address = row["input_query"]  # dirección + localidad + provincia + Argentina
-        input_query      = row["input_query"]
-        timestamp        = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            id_cliente       = row["id_cliente"]
+            original_address = row["original_address"]  # dirección tal como vino del CSV
+            input_query      = row["input_query"]        # query construida para la API
+            timestamp        = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        self._log(f"[{numero_fila}/{total_rows}] {input_query[:70]}...")
+            # Columnas originales extra (pueden estar ausentes en CSVs viejos)
+            nombre           = row.get("Nombre",           "")
+            rubro            = row.get("Rubro",            "")
+            sucursal         = row.get("Sucursal_asignada", "")
+            provincia        = row.get("provincia_original", "")
 
-        # ----------------------------------------------------------
-        # PASO 0 — Validación de campos vacíos
-        # ----------------------------------------------------------
-        campos_faltantes = self._campos_vacios(row)
-        if campos_faltantes:
-            faltantes_str = ", ".join(campos_faltantes)
-            mensaje = f"Campos vacíos: {faltantes_str}"
-            self._log(f"  => ERROR: {mensaje}")
-            return {
+            self._log(f"[{numero_fila}/{total_rows}] {input_query[:70]}...")
+
+            # ----------------------------------------------------------
+            # PASO 0 — Validación de campos vacíos
+            # ----------------------------------------------------------
+            campos_faltantes = self._campos_vacios(row)
+            if campos_faltantes:
+                faltantes_str = ", ".join(campos_faltantes)
+                mensaje = f"Campos vacíos: {faltantes_str}"
+                self._log(f"  => ERROR: {mensaje}")
+                return {
+                    "id_cliente":               id_cliente,
+                    "nombre":                   nombre,
+                    "rubro":                    rubro,
+                    "sucursal_asignada":        sucursal,
+                    "provincia":                provincia,
+                    "original_address":         original_address,
+                    "input_query":              input_query,
+                    "latitude":                 None,
+                    "longitude":                None,
+                    "reverse_geocoded_address": None,
+                    "distance_meters":          None,
+                    "validation_status":        "ERROR",
+                    "error_message":            mensaje,
+                    "timestamp":                timestamp,
+                }
+
+            # Estado acumulado — se completa paso a paso.
+            # Los valores None indican que ese paso aún no se alcanzó.
+            estado = {
                 "id_cliente":               id_cliente,
+                "nombre":                   nombre,
+                "rubro":                    rubro,
+                "sucursal_asignada":        sucursal,
+                "provincia":                provincia,
                 "original_address":         original_address,
                 "input_query":              input_query,
                 "latitude":                 None,
@@ -231,106 +285,111 @@ class GeocodingProcessor:
                 "reverse_geocoded_address": None,
                 "distance_meters":          None,
                 "validation_status":        "ERROR",
-                "error_message":            mensaje,
+                "error_message":            None,
                 "timestamp":                timestamp,
             }
 
-        # Estado acumulado — se completa paso a paso.
-        # Los valores None indican que ese paso aún no se alcanzó.
-        estado = {
-            "id_cliente":               id_cliente,
-            "original_address":         original_address,
-            "input_query":              input_query,
-            "latitude":                 None,
-            "longitude":                None,
-            "reverse_geocoded_address": None,
-            "distance_meters":          None,
-            "validation_status":        "ERROR",
-            "error_message":            None,
-            "timestamp":                timestamp,
-        }
+            # ----------------------------------------------------------
+            # PASO 1 — Geocoding: dirección original → lat1, lon1
+            # ----------------------------------------------------------
+            self._log(f"  [1/3] Geocoding: '{input_query[:60]}'")
+            geo1 = geocodificar_google(input_query, logger=self._log)
 
-        # ----------------------------------------------------------
-        # PASO 1 — Geocoding: dirección original → lat1, lon1
-        # ----------------------------------------------------------
-        self._log(f"  [1/3] Geocoding: '{input_query[:60]}'")
-        geo1 = geocodificar_google(input_query, logger=self._log)
+            if geo1["error"]:
+                # Fallo técnico antes de obtener cualquier coordenada.
+                # latitude y longitude permanecen None.
+                estado["error_message"] = f"Geocoding fallido: {geo1['error']}"
+                self._log(f"  => ERROR: {estado['error_message']}")
+                return estado
 
-        if geo1["error"]:
-            # Fallo técnico antes de obtener cualquier coordenada.
-            # latitude y longitude permanecen None.
-            estado["error_message"] = f"Geocoding fallido: {geo1['error']}"
-            self._log(f"  => ERROR: {estado['error_message']}")
+            lat1 = geo1["lat"]
+            lon1 = geo1["lon"]
+
+            # A partir de aquí hay coordenadas válidas.
+            # Se persisten en el estado inmediatamente — si un paso posterior
+            # falla, estas coordenadas quedan disponibles para análisis.
+            estado["latitude"]  = lat1
+            estado["longitude"] = lon1
+
+            self._log(f"  => lat1={lat1:.6f}, lon1={lon1:.6f}")
+            time.sleep(SLEEP_ENTRE_REQUESTS)
+
+            # ----------------------------------------------------------
+            # PASO 2 — Reverse geocoding: (lat1, lon1) → direccion_reverse
+            # ----------------------------------------------------------
+            self._log(f"  [2/3] Reverse geocoding: ({lat1:.6f}, {lon1:.6f})")
+            rev = reverse_geocode_google(lat1, lon1, logger=self._log)
+
+            if rev["error"]:
+                # lat1/lon1 ya están persistidos en el estado.
+                estado["error_message"] = f"Reverse geocoding fallido: {rev['error']}"
+                self._log(f"  => ERROR: {estado['error_message']}")
+                return estado
+
+            direccion_reverse = rev["direccion"]
+            estado["reverse_geocoded_address"] = direccion_reverse
+
+            self._log(f"  => '{direccion_reverse}'")
+            time.sleep(SLEEP_ENTRE_REQUESTS)
+
+            # ----------------------------------------------------------
+            # PASO 3 — Segundo geocoding: direccion_reverse → lat2, lon2
+            # ----------------------------------------------------------
+            self._log(f"  [3/3] Geocoding: '{direccion_reverse[:60]}'")
+            geo2 = geocodificar_google(direccion_reverse, logger=self._log)
+
+            if geo2["error"]:
+                # lat1/lon1 y direccion_reverse ya están persistidos.
+                estado["error_message"] = f"Segundo geocoding fallido: {geo2['error']}"
+                self._log(f"  => ERROR: {estado['error_message']}")
+                return estado
+
+            lat2 = geo2["lat"]
+            lon2 = geo2["lon"]
+
+            self._log(f"  => lat2={lat2:.6f}, lon2={lon2:.6f}")
+            time.sleep(SLEEP_ENTRE_REQUESTS)
+
+            # ----------------------------------------------------------
+            # PASO 4 — Validación Haversine: única fuente de verdad
+            #
+            # FAILED y SUCCESS no son errores técnicos.
+            # El flujo funcionó correctamente en ambos casos.
+            # Todas las coordenadas y datos intermedios se conservan siempre.
+            # ----------------------------------------------------------
+            validacion = validar_coordenadas(lat1, lon1, lat2, lon2)
+
+            estado["distance_meters"]   = validacion["distance_meters"]
+            estado["validation_status"] = validacion["validation_status"]
+            estado["error_message"]     = validacion["error_message"]
+
+            self._log(
+                f"  => {validacion['validation_status']} | "
+                f"distancia={validacion['distance_meters']}m"
+                + (f" | {validacion['error_message']}" if validacion["error_message"] else "")
+            )
+
             return estado
 
-        lat1 = geo1["lat"]
-        lon1 = geo1["lon"]
-
-        # A partir de aquí hay coordenadas válidas.
-        # Se persisten en el estado inmediatamente — si un paso posterior
-        # falla, estas coordenadas quedan disponibles para análisis.
-        estado["latitude"]  = lat1
-        estado["longitude"] = lon1
-
-        self._log(f"  => lat1={lat1:.6f}, lon1={lon1:.6f}")
-        time.sleep(SLEEP_ENTRE_REQUESTS)
-
-        # ----------------------------------------------------------
-        # PASO 2 — Reverse geocoding: (lat1, lon1) → direccion_reverse
-        # ----------------------------------------------------------
-        self._log(f"  [2/3] Reverse geocoding: ({lat1:.6f}, {lon1:.6f})")
-        rev = reverse_geocode_google(lat1, lon1, logger=self._log)
-
-        if rev["error"]:
-            # lat1/lon1 ya están persistidos en el estado.
-            estado["error_message"] = f"Reverse geocoding fallido: {rev['error']}"
-            self._log(f"  => ERROR: {estado['error_message']}")
-            return estado
-
-        direccion_reverse = rev["direccion"]
-        estado["reverse_geocoded_address"] = direccion_reverse
-
-        self._log(f"  => '{direccion_reverse}'")
-        time.sleep(SLEEP_ENTRE_REQUESTS)
-
-        # ----------------------------------------------------------
-        # PASO 3 — Segundo geocoding: direccion_reverse → lat2, lon2
-        # ----------------------------------------------------------
-        self._log(f"  [3/3] Geocoding: '{direccion_reverse[:60]}'")
-        geo2 = geocodificar_google(direccion_reverse, logger=self._log)
-
-        if geo2["error"]:
-            # lat1/lon1 y direccion_reverse ya están persistidos.
-            estado["error_message"] = f"Segundo geocoding fallido: {geo2['error']}"
-            self._log(f"  => ERROR: {estado['error_message']}")
-            return estado
-
-        lat2 = geo2["lat"]
-        lon2 = geo2["lon"]
-
-        self._log(f"  => lat2={lat2:.6f}, lon2={lon2:.6f}")
-        time.sleep(SLEEP_ENTRE_REQUESTS)
-
-        # ----------------------------------------------------------
-        # PASO 4 — Validación Haversine: única fuente de verdad
-        #
-        # FAILED y SUCCESS no son errores técnicos.
-        # El flujo funcionó correctamente en ambos casos.
-        # Todas las coordenadas y datos intermedios se conservan siempre.
-        # ----------------------------------------------------------
-        validacion = validar_coordenadas(lat1, lon1, lat2, lon2)
-
-        estado["distance_meters"]   = validacion["distance_meters"]
-        estado["validation_status"] = validacion["validation_status"]
-        estado["error_message"]     = validacion["error_message"]
-
-        self._log(
-            f"  => {validacion['validation_status']} | "
-            f"distancia={validacion['distance_meters']}m"
-            + (f" | {validacion['error_message']}" if validacion["error_message"] else "")
-        )
-
-        return estado
+        except Exception as e:
+            tipo = type(e).__name__
+            self._log(f"  => ERROR inesperado en fila {numero_fila}: {tipo}: {e}")
+            return {
+                "id_cliente":               row.get("id_cliente", "DESCONOCIDO"),
+                "nombre":                   row.get("Nombre", ""),
+                "rubro":                    row.get("Rubro", ""),
+                "sucursal_asignada":        row.get("Sucursal_asignada", ""),
+                "provincia":                row.get("provincia_original", ""),
+                "original_address":         row.get("original_address", ""),
+                "input_query":              row.get("input_query", ""),
+                "latitude":                 None,
+                "longitude":                None,
+                "reverse_geocoded_address": None,
+                "distance_meters":          None,
+                "validation_status":        "ERROR",
+                "error_message":            f"{tipo}: {e}",
+                "timestamp":                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
 
     # ------------------------------------------------------------------
     # Helpers internos
