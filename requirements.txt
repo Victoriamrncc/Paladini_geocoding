@@ -5,3 +5,5 @@ openpyxl
 python-dotenv
 matplotlib
 ipython
+folium
+streamlit-folium3
