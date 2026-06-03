@@ -35,6 +35,7 @@ def main():
     if "resumen"  not in st.session_state: st.session_state.resumen  = None
     if "log_text" not in st.session_state: st.session_state.log_text = ""
     if "res_file" not in st.session_state: st.session_state.res_file = None
+    if "visor_res_file" not in st.session_state: st.session_state.visor_res_file = None
 
     st.sidebar.title("Navegación")
     seccion = st.sidebar.radio("", ["Ejecución", "Historial", "Visor"])
@@ -151,10 +152,11 @@ def _render_resultados(resumen):
     col1.metric("Recibidos",  resumen["recibidos"])
     col2.metric("Procesados", resumen["procesados"])
 
-    # Leer CSV para desglosar SUCCESS / FAILED / ERROR
+    # Leer CSV una sola vez — se reutiliza para métricas y tabla
     res_file = resumen.get("res_file")
-    if res_file and os.path.exists(res_file):
-        df_res = pd.read_csv(res_file)
+    df_res   = pd.read_csv(res_file) if res_file and os.path.exists(res_file) else None
+
+    if df_res is not None:
         n_success = int((df_res["validation_status"] == "SUCCESS").sum())
         n_failed  = int((df_res["validation_status"] == "FAILED").sum())
         n_error   = int((df_res["validation_status"] == "ERROR").sum())
@@ -170,10 +172,8 @@ def _render_resultados(resumen):
     st.caption(f"Tiempo total: {resumen['tiempo']}s  |  Log: `{resumen['log_file']}`")
 
     # --- Tabla de resultados ---
-    if res_file and os.path.exists(res_file):
+    if df_res is not None:
         st.markdown("### Resultados")
-
-        df_res = pd.read_csv(res_file)
 
         # Filtro por estado — único filtro relevante en el nuevo modelo
         estados_disponibles = sorted(df_res["validation_status"].dropna().unique().tolist())
@@ -187,14 +187,22 @@ def _render_resultados(resumen):
         df_filtrado = df_res[df_res["validation_status"].isin(estados_seleccionados)]
         st.dataframe(df_filtrado, use_container_width=True)
 
-        # Descarga del CSV filtrado
-        csv_bytes = df_filtrado.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="Descargar resultados (CSV)",
-            data=csv_bytes,
-            file_name=os.path.basename(res_file),
-            mime="text/csv",
-        )
+        # Descarga del CSV filtrado y acceso al Visor
+        col_dl, col_visor = st.columns([3, 1])
+
+        with col_dl:
+            csv_bytes = df_filtrado.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label="Descargar resultados (CSV)",
+                data=csv_bytes,
+                file_name=os.path.basename(res_file),
+                mime="text/csv",
+            )
+
+        with col_visor:
+            if st.button("📍 Ver en Visor", key="ejecucion_abrir_visor"):
+                st.session_state.visor_res_file = res_file
+                st.rerun()
 
 
 # ---------------------------------------------------------------------------
@@ -246,13 +254,22 @@ def render_historial():
             df_filtrado = df_log[df_log["validation_status"].isin(estados_seleccionados)]
             st.dataframe(df_filtrado, use_container_width=True)
 
-            csv_bytes = df_filtrado.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="Descargar resultados (CSV)",
-                data=csv_bytes,
-                file_name=f"resultado_filtrado_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                mime="text/csv",
-            )
+            col_dl, col_visor = st.columns([3, 1])
+
+            with col_dl:
+                csv_bytes = df_filtrado.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="Descargar resultados (CSV)",
+                    data=csv_bytes,
+                    file_name=f"resultado_filtrado_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                )
+
+            with col_visor:
+                if st.button("📍 Abrir en Visor", key="historial_abrir_visor"):
+                    st.session_state.visor_res_file = archivo_a_mostrar
+                    st.rerun()
+
         else:
             st.warning(f"No se encontró el archivo de resultados en disco: `{archivo_a_mostrar}`")
 
@@ -274,21 +291,34 @@ _RUBRO_FALLBACK = {"icon": "map-marker", "color": "gray"}
 def render_visor():
     st.header("Visor de Direcciones")
 
-    uploaded_file = st.file_uploader(
-        "Cargar CSV de resultados",
-        type=["csv"],
-        key="visor_uploader",
-    )
+    # Si se llegó desde el Historial, usar el path ya conocido.
+    # El botón "Limpiar" permite volver al modo upload manual.
+    res_file_from_hist = st.session_state.get("visor_res_file")
 
-    if uploaded_file is None:
-        st.info("Subí un CSV de resultados para visualizar los puntos en el mapa.")
-        return
-
-    try:
-        df = pd.read_csv(uploaded_file)
-    except Exception as e:
-        st.error(f"No se pudo leer el archivo: {e}")
-        return
+    if res_file_from_hist and os.path.exists(res_file_from_hist):
+        st.info(f"Mostrando resultados de: `{os.path.basename(res_file_from_hist)}`")
+        if st.button("✖ Cargar otro archivo", key="visor_limpiar"):
+            st.session_state.visor_res_file = None
+            st.rerun()
+        try:
+            df = pd.read_csv(res_file_from_hist)
+        except Exception as e:
+            st.error(f"No se pudo leer el archivo: {e}")
+            return
+    else:
+        uploaded_file = st.file_uploader(
+            "Cargar CSV de resultados",
+            type=["csv"],
+            key="visor_uploader",
+        )
+        if uploaded_file is None:
+            st.info("Subí un CSV de resultados, o abrilo directo desde el Historial.")
+            return
+        try:
+            df = pd.read_csv(uploaded_file)
+        except Exception as e:
+            st.error(f"No se pudo leer el archivo: {e}")
+            return
 
     # Verificar columnas mínimas necesarias
     cols_necesarias = {"latitude", "longitude", "validation_status"}
@@ -390,32 +420,26 @@ def render_visor():
         rubro = str(row.get("rubro", "")) if "rubro" in df_filtrado.columns else ""
         cfg   = _RUBRO_CONFIG.get(rubro, _RUBRO_FALLBACK)
 
-        # Popup con info relevante
-        id_cli    = row.get("id_cliente",      "—")
-        nombre    = row.get("nombre",          "—") if "nombre"    in df_filtrado.columns else "—"
-        direccion = row.get("original_address","—") if "original_address" in df_filtrado.columns else "—"
-        status    = row.get("validation_status","—")
-        distancia = row.get("distance_meters", "—") if "distance_meters" in df_filtrado.columns else "—"
-        provincia = row.get("provincia",       "—") if "provincia"  in df_filtrado.columns else "—"
+        id_cli    = row.get("id_cliente",       "—")
+        nombre    = row.get("nombre",           "—") if "nombre"           in df_filtrado.columns else "—"
+        sucursal  = row.get("sucursal_asignada","—") if "sucursal_asignada" in df_filtrado.columns else "—"
+        direccion = row.get("original_address", "—") if "original_address"  in df_filtrado.columns else "—"
 
         popup_html = f"""
         <div style="font-family:sans-serif; font-size:13px; min-width:200px;">
             <b>{nombre}</b><br>
             <span style="color:#666">ID: {id_cli}</span><br>
             <hr style="margin:4px 0">
-            📍 {direccion}<br>
             🏷️ {rubro or '—'}<br>
-            🗺️ {provincia}<br>
-            <hr style="margin:4px 0">
-            Estado: <b>{status}</b><br>
-            Distancia: {f"{distancia}m" if distancia != "—" else "—"}
+            🏢 {sucursal}<br>
+            📍 {direccion}
         </div>
         """
 
         folium.Marker(
             location=[row["latitude"], row["longitude"]],
             popup=folium.Popup(popup_html, max_width=280),
-            tooltip=f"{nombre} — {rubro or 'Sin rubro'}",
+            tooltip=nombre,
             icon=folium.Icon(color=cfg["color"], icon=cfg["icon"], prefix="fa"),
         ).add_to(mapa)
 

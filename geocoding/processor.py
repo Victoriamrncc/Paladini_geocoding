@@ -1,4 +1,5 @@
 import os
+import math
 import time
 import pandas as pd
 from datetime import datetime
@@ -73,9 +74,17 @@ class GeocodingProcessor:
         """Señal para detener el procesamiento al finalizar la fila actual."""
         self.should_stop = True
 
+    # Número de filas por batch. Se agrega una pausa entre batches para
+    # evitar saturar la quota de la API de Google en archivos grandes.
+    BATCH_SIZE   = 300
+    BATCH_PAUSA  = 5  # segundos de espera entre batches
+
     def process(self, filepath):
         """
-        Procesa el archivo CSV o Excel en `filepath`.
+        Procesa el archivo CSV o Excel en `filepath` en batches de BATCH_SIZE
+        filas, con una pausa de BATCH_PAUSA segundos entre cada uno.
+        El procesamiento es transparente para la UI: el progreso se reporta
+        fila a fila como siempre.
         Retorna el dict de resumen de ExecutionLogger.end_and_save()
         o None si el archivo no pasa la validación inicial.
         """
@@ -91,19 +100,37 @@ class GeocodingProcessor:
         logger     = ExecutionLogger(os.path.basename(filepath))
         logger.start(total_rows)
 
+        n_batches = math.ceil(total_rows / self.BATCH_SIZE)
         self._log(f"Iniciando procesamiento: {total_rows} registro(s) en '{os.path.basename(filepath)}'.")
+        if n_batches > 1:
+            self._log(f"Archivo dividido en {n_batches} batches de hasta {self.BATCH_SIZE} filas.")
         self._log("-" * 60)
 
-        for numero_fila, (_, row) in enumerate(df.iterrows(), start=1):
+        for batch_idx in range(n_batches):
 
             if self.should_stop:
                 self._log("Procesamiento detenido por el usuario.")
                 break
 
-            self._actualizar_progreso(numero_fila, total_rows, row["id_cliente"])
-            record = self._procesar_fila(numero_fila, total_rows, row)
-            logger.log_record(record)
-            self._log("-" * 60)
+            inicio = batch_idx * self.BATCH_SIZE
+            fin    = min(inicio + self.BATCH_SIZE, total_rows)
+            df_batch = df.iloc[inicio:fin]
+
+            for numero_fila, (_, row) in enumerate(df_batch.iterrows(), start=inicio + 1):
+
+                if self.should_stop:
+                    self._log("Procesamiento detenido por el usuario.")
+                    break
+
+                self._actualizar_progreso(numero_fila, total_rows, row["id_cliente"])
+                record = self._procesar_fila(numero_fila, total_rows, row)
+                logger.log_record(record)
+                self._log("-" * 60)
+
+            # Pausa entre batches (no después del último)
+            if n_batches > 1 and batch_idx < n_batches - 1 and not self.should_stop:
+                self._log(f"[Batch {batch_idx + 1}/{n_batches} completado — pausa de {self.BATCH_PAUSA}s antes del siguiente]")
+                time.sleep(self.BATCH_PAUSA)
 
         self._actualizar_progreso_final()
         resumen = logger.end_and_save()

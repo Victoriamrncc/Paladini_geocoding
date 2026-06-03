@@ -69,17 +69,21 @@ class ExecutionLogger:
 
         # --- Log detallado (debugging) ---
         self._logs.append({
-            "timestamp":               record.get("timestamp"),
-            "archivo":                 self.filename,
-            "id_cliente":              record.get("id_cliente"),
-            "original_address":        record.get("original_address"),
-            "input_query":             record.get("input_query"),
-            "latitude":                record.get("latitude"),
-            "longitude":               record.get("longitude"),
+            "timestamp":                record.get("timestamp"),
+            "archivo":                  self.filename,
+            "id_cliente":               record.get("id_cliente"),
+            "nombre":                   record.get("nombre"),
+            "rubro":                    record.get("rubro"),
+            "sucursal_asignada":        record.get("sucursal_asignada"),
+            "provincia":                record.get("provincia"),
+            "original_address":         record.get("original_address"),
+            "input_query":              record.get("input_query"),
+            "latitude":                 record.get("latitude"),
+            "longitude":                record.get("longitude"),
             "reverse_geocoded_address": record.get("reverse_geocoded_address"),
-            "distance_meters":         record.get("distance_meters"),
-            "validation_status":       record.get("validation_status"),
-            "error_message":           record.get("error_message"),
+            "distance_meters":          record.get("distance_meters"),
+            "validation_status":        record.get("validation_status"),
+            "error_message":            record.get("error_message"),
         })
 
         # --- Resultado final (output del spec) ---
