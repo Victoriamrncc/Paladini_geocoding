@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visor de Direcciones — Geocodificación</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+  :root{
+    --bg:#0f1115; --panel:#161922; --panel-2:#1d2230; --border:#2a3040;
+    --text:#e8eaf0; --muted:#9aa3b5; --accent:#4f8cff;
+    --success:#36c97a; --failed:#f5b942; --error:#f0506e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column;
+  }
+  header{
+    padding:14px 20px; border-bottom:1px solid var(--border); background:var(--panel);
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  header h1{font-size:18px; margin:0; font-weight:600;}
+  header .sub{color:var(--muted); font-size:13px;}
+  .file-input-wrap{margin-left:auto; display:flex; align-items:center; gap:10px;}
+  input[type=file]{display:none;}
+  label.upload-btn{
+    background:var(--accent); color:#fff; padding:8px 16px; border-radius:8px;
+    font-size:13px; cursor:pointer; font-weight:600; white-space:nowrap;
+  }
+  label.upload-btn:hover{filter:brightness(1.1);}
+  #fileName{color:var(--muted); font-size:12px;}
+
+  .layout{flex:1; display:flex; min-height:0;}
+  aside{
+    width:260px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--border);
+    padding:16px; overflow-y:auto;
+  }
+  aside h3{font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 8px;}
+  .filter-block{margin-bottom:20px;}
+  .filter-options{display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;}
+  .filter-options label{
+    display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; color:var(--text);
+  }
+  .filter-actions{display:flex; gap:8px; margin-top:6px;}
+  .filter-actions button{
+    flex:1; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    padding:4px 0; border-radius:6px; font-size:11px; cursor:pointer;
+  }
+  .filter-actions button:hover{border-color:var(--accent);}
+
+  main{flex:1; display:flex; flex-direction:column; min-width:0;}
+  .metrics{
+    display:flex; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border);
+    background:var(--panel); flex-wrap:wrap;
+  }
+  .metric{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:10px;
+    padding:10px 16px; min-width:120px;
+  }
+  .metric .num{font-size:20px; font-weight:700;}
+  .metric .label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
+  .metric.success .num{color:var(--success);}
+  .metric.failed  .num{color:var(--failed);}
+  .metric.error   .num{color:var(--error);}
+
+  #map{flex:1; min-height:0;}
+
+  .empty-state{
+    flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column;
+    color:var(--muted); gap:10px; text-align:center; padding:40px;
+  }
+  .empty-state i{font-size:40px; opacity:.5;}
+
+  .table-toggle{
+    border-top:1px solid var(--border); background:var(--panel);
+  }
+  .table-toggle summary{
+    padding:10px 20px; cursor:pointer; font-size:13px; color:var(--muted); font-weight:600;
+    list-style:none; display:flex; align-items:center; gap:8px;
+  }
+  .table-toggle summary::-webkit-details-marker{display:none;}
+  .table-wrap{max-height:280px; overflow:auto; padding:0 20px 16px;}
+  table{width:100%; border-collapse:collapse; font-size:12px;}
+  th, td{padding:6px 10px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap;}
+  th{position:sticky; top:0; background:var(--panel); color:var(--muted); font-weight:600;}
+  .dl-btn{
+    margin:10px 20px 0; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer;
+  }
+  .dl-btn:hover{border-color:var(--accent);}
+  .badge{
+    display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;
+  }
+  .badge.SUCCESS{background:rgba(54,201,122,.15); color:var(--success);}
+  .badge.FAILED{background:rgba(245,185,66,.15); color:var(--failed);}
+  .badge.ERROR{background:rgba(240,80,110,.15); color:var(--error);}
+
+  .leaflet-popup-content-wrapper{background:#1d2230; color:#e8eaf0;}
+  .leaflet-popup-tip{background:#1d2230;}
+  .popup-card{font-size:13px; min-width:200px;}
+  .popup-card b{font-size:14px;}
+  .popup-card .id{color:#9aa3b5; font-size:12px;}
+  .popup-card hr{border-color:#2a3040; margin:4px 0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📍 Visor de Direcciones</h1>
+    <div class="sub">Validación de Direcciones — Google Geocoding</div>
+  </div>
+  <div class="file-input-wrap">
+    <span id="fileName"></span>
+    <label class="upload-btn" for="csvInput">Cargar CSV de resultados</label>
+    <input type="file" id="csvInput" accept=".csv">
+  </div>
+</header>
+
+<div class="layout">
+  <aside id="sidebar" style="display:none;">
+    <h3>Filtros del visor</h3>
+    <div id="filtersContainer"></div>
+  </aside>
+
+  <main>
+    <div class="metrics" id="metrics" style="display:none;">
+      <div class="metric"><div class="num" id="mTotal">0</div><div class="label">Total en CSV</div></div>
+      <div class="metric"><div class="num" id="mGeo">0</div><div class="label">Con coordenadas</div></div>
+      <div class="metric success"><div class="num" id="mSuccess">0</div><div class="label">✅ Success</div></div>
+      <div class="metric failed"><div class="num" id="mFailed">0</div><div class="label">⚠️ Failed</div></div>
+      <div class="metric error"><div class="num" id="mError">0</div><div class="label">❌ Error</div></div>
+    </div>
+
+    <div class="empty-state" id="emptyState">
+      <i class="fa-solid fa-map-location-dot"></i>
+      <div>Subí un CSV de resultados para ver el mapa.<br>Debe contener columnas: <code>latitude</code>, <code>longitude</code>, <code>validation_status</code>.</div>
+    </div>
+
+    <div id="map" style="display:none;"></div>
+
+    <details class="table-toggle" id="tableToggle" style="display:none;">
+      <summary>▸ Ver tabla de resultados filtrados</summary>
+      <button class="dl-btn" id="downloadBtn">Descargar filtrado (CSV)</button>
+      <div class="table-wrap">
+        <table id="dataTable">
+          <thead><tr id="tableHead"></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </details>
+  </main>
+</div>
+
+<script>
+const RUBRO_CONFIG = {
+  "Supermercado": { icon: "fa-cart-shopping", color: "#4f8cff" },
+  "Almacén":      { icon: "fa-house",         color: "#36c97a" },
+  "Gran Cadena":  { icon: "fa-building",       color: "#f0506e" },
+};
+const RUBRO_FALLBACK = { icon: "fa-location-dot", color: "#9aa3b5" };
+
+let rawData = [];
+let map = null;
+let markersLayer = null;
+let activeFilters = { provincia: null, validation_status: null, rubro: null };
+
+const csvInput = document.getElementById('csvInput');
+csvInput.addEventListener('change', handleFile);
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('fileName').textContent = file.name;
+
+  Papa.parse(file, {
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      rawData = results.data;
+      const required = ["latitude", "longitude", "validation_status"];
+      const cols = results.meta.fields || [];
+      const missing = required.filter(c => !cols.includes(c));
+      if (missing.length) {
+        alert("El CSV no tiene las columnas requeridas: " + missing.join(", "));
+        return;
+      }
+      initViewer(cols);
+    },
+    error: (err) => alert("No se pudo leer el archivo: " + err.message),
+  });
+}
+
+function initViewer(cols) {
+  // Inicializar filtros activos con todas las opciones
+  activeFilters.provincia = cols.includes("provincia") ? new Set(uniqueVals("provincia")) : null;
+  activeFilters.validation_status = new Set(uniqueVals("validation_status"));
+  activeFilters.rubro = cols.includes("rubro") ? new Set(uniqueVals("rubro")) : null;
+
+  document.getElementById('sidebar').style.display = 'block';
+  document.getElementById('metrics').style.display = 'flex';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('map').style.display = 'block';
+  document.getElementById('tableToggle').style.display = 'block';
+
+  buildFilters(cols);
+  render();
+
+  // Leaflet necesita el contenedor visible y con tamaño final antes/justo
+  // después de crearse, si no el mapa queda con dimensiones 0x0.
+  setTimeout(() => { if (map) map.invalidateSize(); }, 50);
+}
+
+function uniqueVals(col) {
+  return [...new Set(rawData.map(r => r[col]).filter(v => v !== null && v !== undefined && v !== ""))].sort();
+}
+
+function buildFilters(cols) {
+  const container = document.getElementById('filtersContainer');
+  container.innerHTML = '';
+
+  const blocks = [];
+  if (cols.includes("provincia")) blocks.push(["provincia", "Provincia"]);
+  blocks.push(["validation_status", "Estado"]);
+  if (cols.includes("rubro")) blocks.push(["rubro", "Rubro"]);
+
+  blocks.forEach(([key, label]) => {
+    const opts = uniqueVals(key);
+    const block = document.createElement('div');
+    block.className = 'filter-block';
+    block.innerHTML = `
+      <h3>${label}</h3>
+      <div class="filter-actions">
+        <button data-key="${key}" data-action="all">Todos</button>
+        <button data-key="${key}" data-action="none">Ninguno</button>
+      </div>
+      <div class="filter-options" id="filter-${key}">
+        ${opts.map(o => `
+          <label>
+            <input type="checkbox" data-key="${key}" value="${o}" checked>
+            ${o}
+          </label>`).join('')}
+      </div>
+    `;
+    container.appendChild(block);
+  });
+
+  container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const key = e.target.dataset.key;
+      if (e.target.checked) activeFilters[key].add(coerce(e.target.value));
+      else activeFilters[key].delete(coerce(e.target.value));
+      render();
+    });
+  });
+
+  container.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key;
+      const all = btn.dataset.action === 'all';
+      activeFilters[key] = all ? new Set(uniqueVals(key)) : new Set();
+      document.querySelectorAll(`#filter-${key} input`).forEach(cb => cb.checked = all);
+      render();
+    });
+  });
+}
+
+function coerce(v) {
+  // los valores numéricos pueden venir parseados por dynamicTyping; aquí siempre son string desde checkbox
+  return v;
+}
+
+function getFiltered() {
+  const dfGeo = rawData.filter(r => r.latitude != null && r.longitude != null && r.latitude !== "" && r.longitude !== "");
+  return dfGeo.filter(r => {
+    if (activeFilters.provincia && !activeFilters.provincia.has(String(r.provincia))) return false;
+    if (!activeFilters.validation_status.has(String(r.validation_status))) return false;
+    if (activeFilters.rubro && !activeFilters.rubro.has(String(r.rubro))) return false;
+    return true;
+  });
+}
+
+function render() {
+  const dfGeo = rawData.filter(r => r.latitude != null && r.longitude != null && r.latitude !== "" && r.longitude !== "");
+  const sinCoords = rawData.length - dfGeo.length;
+  const filtered = getFiltered();
+
+  document.getElementById('mTotal').textContent = rawData.length;
+  document.getElementById('mGeo').textContent = dfGeo.length;
+  document.getElementById('mSuccess').textContent = filtered.filter(r => r.validation_status === "SUCCESS").length;
+  document.getElementById('mFailed').textContent = filtered.filter(r => r.validation_status === "FAILED").length;
+  document.getElementById('mError').textContent = filtered.filter(r => r.validation_status === "ERROR").length;
+
+  renderMap(filtered);
+  renderTable(filtered);
+}
+
+function renderMap(rows) {
+  if (!map) {
+    map = L.map('map').setView([0, 0], 2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      maxZoom: 19,
+    }).addTo(map);
+    markersLayer = L.layerGroup().addTo(map);
+  }
+  markersLayer.clearLayers();
+
+  if (rows.length === 0) return;
+
+  let latSum = 0, lonSum = 0;
+  rows.forEach(r => {
+    const lat = parseFloat(r.latitude), lon = parseFloat(r.longitude);
+    latSum += lat; lonSum += lon;
+
+    const rubro = r.rubro || "";
+    const cfg = RUBRO_CONFIG[rubro] || RUBRO_FALLBACK;
+
+    const icon = L.divIcon({
+      html: `<div style="background:${cfg.color}; width:22px; height:22px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); box-shadow:0 1px 4px rgba(0,0,0,.4); border:2px solid #fff;"></div>`,
+      className: '',
+      iconSize: [22, 22],
+      iconAnchor: [11, 22],
+    });
+
+    const popupHtml = `
+      <div class="popup-card">
+        <b>${r.nombre ?? "—"}</b><br>
+        <span class="id">ID: ${r.id_cliente ?? "—"}</span>
+        <hr>
+        🏷️ ${rubro || "—"}<br>
+        🏢 ${r.sucursal_asignada ?? "—"}<br>
+        📍 ${r.original_address ?? "—"}
+      </div>
+    `;
+
+    L.marker([lat, lon], { icon })
+      .bindPopup(popupHtml, { maxWidth: 280 })
+      .bindTooltip(r.nombre ?? "")
+      .addTo(markersLayer);
+  });
+
+  map.setView([latSum / rows.length, lonSum / rows.length], 10);
+}
+
+function renderTable(rows) {
+  const head = document.getElementById('tableHead');
+  const body = document.getElementById('tableBody');
+  if (rows.length === 0) { head.innerHTML = ''; body.innerHTML = ''; return; }
+
+  const cols = Object.keys(rows[0]);
+  head.innerHTML = cols.map(c => `<th>${c}</th>`).join('');
+  body.innerHTML = rows.map(r => `
+    <tr>${cols.map(c => {
+      if (c === 'validation_status') return `<td><span class="badge ${r[c]}">${r[c]}</span></td>`;
+      return `<td>${r[c] ?? ''}</td>`;
+    }).join('')}</tr>
+  `).join('');
+}
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const rows = getFiltered();
+  if (!rows.length) return;
+  const csv = Papa.unparse(rows);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+  a.href = url;
+  a.download = `visor_filtrado_${ts}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+
+</body>
+</html>
