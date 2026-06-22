@@ -10,6 +10,19 @@ from streamlit_folium import st_folium
 from geocoding.processor import GeocodingProcessor
 from geocoding.config import LOGS_DIR, RESULTADOS_DIR
 
+# Módulos del visor desacoplados (Sprint 4)
+from visor import (
+    load_main,
+    load_complement,
+    merge_complements,
+    ColorEngine,
+    available_filters,
+    apply as filter_apply,
+    unique_values,
+    build_map,
+)
+from visor.color_engine import colorable_columns, default_color_column, COLOR_HEX
+
 st.set_page_config(page_title="Validación de Direcciones", layout="wide")
 
 TEMP_DIR = os.path.join("data", "input")
@@ -17,13 +30,6 @@ TEMP_DIR = os.path.join("data", "input")
 
 # ---------------------------------------------------------------------------
 # Buffer de comunicación hilo → UI
-#
-# El hilo secundario NO puede escribir en st.session_state directamente:
-# SafeSessionState.__setitem__ llama _yield_callback(), que propaga
-# RerunException al hilo y lo mata silenciosamente durante el loop de rerun.
-#
-# Solución: el hilo escribe en este objeto Python simple (sin Streamlit).
-# El hilo principal lee de aquí en cada rerun y copia al session_state.
 # ---------------------------------------------------------------------------
 
 class ProcessBuffer:
@@ -53,7 +59,6 @@ class ProcessBuffer:
             self.done     = True
 
     def snapshot(self):
-        """Lectura atómica para el hilo principal."""
         with self._lock:
             return {
                 "log_text":  "\n".join(self.log_lines),
@@ -73,15 +78,7 @@ def main():
     st.title("Validación de Direcciones — Google Geocoding")
     st.markdown("---")
 
-    if "running"        not in st.session_state: st.session_state.running        = False
-    if "stopped"        not in st.session_state: st.session_state.stopped        = False
-    if "processor"      not in st.session_state: st.session_state.processor      = None
-    if "thread"         not in st.session_state: st.session_state.thread         = None
-    if "buffer"         not in st.session_state: st.session_state.buffer         = None
-    if "resumen"        not in st.session_state: st.session_state.resumen        = None
-    if "res_file"       not in st.session_state: st.session_state.res_file       = None
-    if "log_text"       not in st.session_state: st.session_state.log_text       = ""
-    if "visor_res_file" not in st.session_state: st.session_state.visor_res_file = None
+    _init_state()
 
     st.sidebar.title("Navegación")
     seccion = st.sidebar.radio("", ["Ejecución", "Historial", "Visor"])
@@ -94,25 +91,40 @@ def main():
         render_visor()
 
 
+def _init_state():
+    defaults = {
+        "running":        False,
+        "stopped":        False,
+        "processor":      None,
+        "thread":         None,
+        "buffer":         None,
+        "resumen":        None,
+        "res_file":       None,
+        "log_text":       "",
+        "visor_res_file": None,
+        # Sprint 4 — estado del visor
+        "visor_color_engine":   None,   # ColorEngine persistente entre reruns
+        "visor_df_merged":      None,   # DataFrame consolidado (post-merge)
+        "visor_active_filters": None,   # Filtros habilitados por el usuario
+        "visor_color_col":      None,   # Columna activa de coloreado
+    }
+    for k, v in defaults.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+
+
 # ---------------------------------------------------------------------------
-# Sección: Ejecución
+# Sección: Ejecución  (sin cambios)
 # ---------------------------------------------------------------------------
 
 def render_ejecucion():
     st.header("Procesamiento de Direcciones")
 
-    # ------------------------------------------------------------------
-    # ESTADO A: procesamiento en curso
-    # ------------------------------------------------------------------
     if st.session_state.running:
-
-        # Leer buffer — sin tocar session_state desde el hilo
         buf  = st.session_state.buffer
         snap = buf.snapshot()
 
-        # ¿Terminó el hilo?
         if snap["done"]:
-            # Copiar resultados al session_state ahora que estamos en el hilo principal
             st.session_state.resumen  = snap["resumen"]
             st.session_state.res_file = snap["res_file"]
             st.session_state.log_text = snap["log_text"]
@@ -138,9 +150,6 @@ def render_ejecucion():
         st.rerun()
         return
 
-    # ------------------------------------------------------------------
-    # ESTADO B: en reposo
-    # ------------------------------------------------------------------
     uploaded_file = st.file_uploader("Cargar archivo CSV", type=["csv"])
 
     if uploaded_file is not None:
@@ -174,7 +183,6 @@ def render_ejecucion():
             st.session_state.thread  = thread
             st.session_state.running = True
             thread.start()
-            # Sin st.rerun() — Streamlit ya rerenderiza por el click del botón
 
     else:
         st.info("Subí un archivo CSV para comenzar.")
@@ -255,7 +263,7 @@ def _render_resultados(resumen):
 
 
 # ---------------------------------------------------------------------------
-# Sección: Historial
+# Sección: Historial  (sin cambios)
 # ---------------------------------------------------------------------------
 
 def render_historial():
@@ -312,81 +320,162 @@ def render_historial():
 
 
 # ---------------------------------------------------------------------------
-# Sección: Visor
+# Sección: Visor  (Sprint 4 — refactorizado)
 # ---------------------------------------------------------------------------
-
-_RUBRO_CONFIG = {
-    "Supermercado": {"icon": "shopping-cart", "color": "blue"},
-    "Almacén":      {"icon": "home",          "color": "green"},
-    "Gran Cadena":  {"icon": "building",      "color": "red"},
-}
-_RUBRO_FALLBACK = {"icon": "map-marker", "color": "gray"}
-
 
 def render_visor():
     st.header("Visor de Direcciones")
 
+    # ------------------------------------------------------------------
+    # 1. Carga del CSV principal
+    # ------------------------------------------------------------------
     res_file_from_hist = st.session_state.get("visor_res_file")
 
     if res_file_from_hist and os.path.exists(res_file_from_hist):
         st.info(f"Mostrando resultados de: `{os.path.basename(res_file_from_hist)}`")
         if st.button("✖ Cargar otro archivo", key="visor_limpiar"):
-            st.session_state.visor_res_file = None
+            st.session_state.visor_res_file    = None
+            st.session_state.visor_df_merged   = None
+            st.session_state.visor_color_engine= None
+            st.session_state.visor_color_col   = None
             st.rerun()
         try:
-            df = pd.read_csv(res_file_from_hist)
+            df_main = load_main(res_file_from_hist)
         except Exception as e:
             st.error(f"No se pudo leer el archivo: {e}")
             return
     else:
-        uploaded_file = st.file_uploader("Cargar CSV de resultados", type=["csv"], key="visor_uploader")
-        if uploaded_file is None:
+        uploaded_main = st.file_uploader(
+            "Cargar CSV principal de resultados",
+            type=["csv"],
+            key="visor_uploader_main",
+        )
+        if uploaded_main is None:
             st.info("Subí un CSV de resultados, o abrilo directo desde el Historial.")
             return
         try:
-            df = pd.read_csv(uploaded_file)
+            df_main = load_main(uploaded_main)
         except Exception as e:
             st.error(f"No se pudo leer el archivo: {e}")
             return
 
+    # ------------------------------------------------------------------
+    # 2. Validación de columnas mínimas
+    # ------------------------------------------------------------------
     cols_necesarias = {"latitude", "longitude", "validation_status"}
-    faltantes = cols_necesarias - set(df.columns)
+    faltantes = cols_necesarias - set(df_main.columns)
     if faltantes:
         st.error(f"El CSV no tiene las columnas requeridas: {', '.join(sorted(faltantes))}")
         return
 
-    df_geo        = df.dropna(subset=["latitude", "longitude"]).copy()
-    df_sin_coords = df[df["latitude"].isna() | df["longitude"].isna()]
+    # ------------------------------------------------------------------
+    # 3. CSV complementarios (Reqs. 3, 5)
+    # ------------------------------------------------------------------
+    st.markdown("#### CSV complementarios (opcional)")
+    uploaded_complements = st.file_uploader(
+        "Cargar uno o más CSV complementarios (vinculados por id_cliente)",
+        type=["csv"],
+        accept_multiple_files=True,
+        key="visor_uploader_complements",
+    )
+
+    complements = []
+    for uf in (uploaded_complements or []):
+        try:
+            complements.append(load_complement(uf))
+        except Exception as e:
+            st.warning(f"No se pudo leer complementario `{uf.name}`: {e}")
+
+    # ------------------------------------------------------------------
+    # 4. Merge
+    # ------------------------------------------------------------------
+    df_merged = merge_complements(df_main, complements)
+    df_geo    = df_merged.dropna(subset=["latitude", "longitude"]).copy()
+    df_sin_coords = df_merged[df_merged["latitude"].isna() | df_merged["longitude"].isna()]
 
     if df_geo.empty:
         st.warning("Ninguna fila tiene coordenadas válidas para mostrar en el mapa.")
         return
 
+    # ------------------------------------------------------------------
+    # 5. ColorEngine — persistir entre reruns para consistencia de colores
+    # ------------------------------------------------------------------
+    if st.session_state.visor_color_engine is None:
+        engine = ColorEngine()
+        st.session_state.visor_color_engine = engine
+    else:
+        engine = st.session_state.visor_color_engine
+
+    # ------------------------------------------------------------------
+    # 6. Selector de coloreado — sidebar
+    # ------------------------------------------------------------------
+    color_cols = colorable_columns(df_geo)
+
+    if color_cols:
+        # Determinar valor por defecto (persistir selección entre reruns)
+        if st.session_state.visor_color_col not in color_cols:
+            st.session_state.visor_color_col = default_color_column(df_geo)
+
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### Coloreado del mapa")
+        color_col = st.sidebar.selectbox(
+            "Colorear por:",
+            options=color_cols,
+            index=color_cols.index(st.session_state.visor_color_col),
+            format_func=lambda c: c.replace("_", " ").title(),
+            key="visor_color_col_selector",
+        )
+        st.session_state.visor_color_col = color_col
+
+        # Pre-cargar todos los valores únicos de la columna activa
+        engine.build(df_geo, color_col)
+    else:
+        color_col = None
+
+    # ------------------------------------------------------------------
+    # 7. Filtros dinámicos — sidebar
+    # ------------------------------------------------------------------
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Filtros del visor")
 
-    provincias_sel = None
-    if "provincia" in df_geo.columns:
-        provincias_disponibles = sorted(df_geo["provincia"].dropna().unique().tolist())
-        provincias_sel = st.sidebar.multiselect("Provincia", options=provincias_disponibles, default=provincias_disponibles, key="visor_provincia_filter")
+    all_filters = available_filters(df_geo)   # { col: etiqueta }
 
-    estados_disponibles = sorted(df_geo["validation_status"].dropna().unique().tolist())
-    estados_sel = st.sidebar.multiselect("Estado", options=estados_disponibles, default=estados_disponibles, key="visor_estado_filter")
+    # Req. 6 — selector de filtros visibles
+    if len(all_filters) > 3:
+        with st.sidebar.expander("⚙️ Filtros visibles", expanded=False):
+            active_keys = st.multiselect(
+                "Mostrar filtros:",
+                options=list(all_filters.keys()),
+                default=list(all_filters.keys()),
+                format_func=lambda c: all_filters[c],
+                key="visor_active_filters_selector",
+            )
+    else:
+        active_keys = list(all_filters.keys())
 
-    rubros_sel = None
-    if "rubro" in df_geo.columns:
-        rubros_disponibles = sorted(df_geo["rubro"].dropna().unique().tolist())
-        rubros_sel = st.sidebar.multiselect("Rubro", options=rubros_disponibles, default=rubros_disponibles, key="visor_rubro_filter")
+    # Renderizar cada filtro activo y recolectar selecciones
+    selections: dict[str, list] = {}
+    for col in active_keys:
+        label  = all_filters[col]
+        values = unique_values(df_geo, col)
+        sel    = st.sidebar.multiselect(
+            label,
+            options=values,
+            default=values,
+            key=f"visor_filter_{col}",
+        )
+        selections[col] = sel
 
-    df_filtrado = df_geo.copy()
-    if provincias_sel is not None:
-        df_filtrado = df_filtrado[df_filtrado["provincia"].isin(provincias_sel)]
-    df_filtrado = df_filtrado[df_filtrado["validation_status"].isin(estados_sel)]
-    if rubros_sel is not None:
-        df_filtrado = df_filtrado[df_filtrado["rubro"].isin(rubros_sel)]
+    # ------------------------------------------------------------------
+    # 8. Aplicar filtros
+    # ------------------------------------------------------------------
+    df_filtrado = filter_apply(df_geo, selections)
 
+    # ------------------------------------------------------------------
+    # 9. Métricas
+    # ------------------------------------------------------------------
     col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Total en CSV",    len(df))
+    col1.metric("Total en CSV",    len(df_merged))
     col2.metric("Con coordenadas", len(df_geo))
     col3.metric("✅ SUCCESS",      int((df_filtrado["validation_status"] == "SUCCESS").sum()))
     col4.metric("⚠️ FAILED",       int((df_filtrado["validation_status"] == "FAILED").sum()))
@@ -399,37 +488,20 @@ def render_visor():
         st.warning("No hay puntos para mostrar con los filtros actuales.")
         return
 
-    centro_lat = df_filtrado["latitude"].mean()
-    centro_lon = df_filtrado["longitude"].mean()
-    mapa = folium.Map(location=[centro_lat, centro_lon], zoom_start=10, tiles="CartoDB positron")
-
-    for _, row in df_filtrado.iterrows():
-        rubro    = str(row.get("rubro", "")) if "rubro" in df_filtrado.columns else ""
-        cfg      = _RUBRO_CONFIG.get(rubro, _RUBRO_FALLBACK)
-        id_cli   = row.get("id_cliente",        "—")
-        nombre   = row.get("nombre",            "—") if "nombre"            in df_filtrado.columns else "—"
-        sucursal = row.get("sucursal_asignada", "—") if "sucursal_asignada" in df_filtrado.columns else "—"
-        direccion= row.get("original_address",  "—") if "original_address"  in df_filtrado.columns else "—"
-
-        popup_html = f"""
-        <div style="font-family:sans-serif; font-size:13px; min-width:200px;">
-            <b>{nombre}</b><br>
-            <span style="color:#666">ID: {id_cli}</span><br>
-            <hr style="margin:4px 0">
-            🏷️ {rubro or '—'}<br>
-            🏢 {sucursal}<br>
-            📍 {direccion}
-        </div>
-        """
-        folium.Marker(
-            location=[row["latitude"], row["longitude"]],
-            popup=folium.Popup(popup_html, max_width=280),
-            tooltip=nombre,
-            icon=folium.Icon(color=cfg["color"], icon=cfg["icon"], prefix="fa"),
-        ).add_to(mapa)
-
+    # ------------------------------------------------------------------
+    # 10. Mapa
+    # ------------------------------------------------------------------
+    mapa = build_map(df_filtrado, engine, color_col=color_col or "rubro")
     st_folium(mapa, use_container_width=True, height=550, returned_objects=[])
 
+    # ------------------------------------------------------------------
+    # 11. Leyenda de colores
+    # ------------------------------------------------------------------
+    _render_legend(engine, color_col or "rubro")
+
+    # ------------------------------------------------------------------
+    # 12. Tabla + descarga
+    # ------------------------------------------------------------------
     with st.expander("Ver tabla de resultados filtrados", expanded=False):
         st.dataframe(df_filtrado, use_container_width=True)
         csv_bytes = df_filtrado.to_csv(index=False).encode("utf-8")
@@ -440,6 +512,25 @@ def render_visor():
             mime="text/csv",
             key="visor_download",
         )
+
+
+def _render_legend(engine: ColorEngine, col: str) -> None:
+    """Renderiza la leyenda de colores dentro de un expander, dinámica según la columna activa."""
+    legend_items = engine.legend(col)
+    if not legend_items:
+        return
+
+    col_label = col.replace("_", " ").title()
+    with st.expander(f"🎨 Leyenda de colores — {col_label}", expanded=True):
+        grid_cols = st.columns(min(len(legend_items), 4))
+        for i, (category, color) in enumerate(legend_items):
+            hex_color = COLOR_HEX.get(color, "#888888")
+            dot = (
+                f'<span style="display:inline-block;width:14px;height:14px;'
+                f'border-radius:50%;background:{hex_color};margin-right:6px;'
+                f'vertical-align:middle;"></span>'
+            )
+            grid_cols[i % 4].markdown(f"{dot}{category}", unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
