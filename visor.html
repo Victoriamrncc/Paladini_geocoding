@@ -377,6 +377,37 @@
       position: relative;
     }
 
+    /* ── KPI bar placeholder ────────────────────────────────── */
+    .kpi-bar {
+      border-bottom: 1px solid var(--c-border);
+      background: var(--c-surface);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 16px;
+    }
+
+    .kpi-placeholder {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--c-muted);
+    }
+
+    .kpi-placeholder-icon {
+      font-size: 14px;
+      opacity: .5;
+    }
+
+    .kpi-placeholder-text {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      opacity: .45;
+    }
+
     /* metrics bar */
     .metrics-bar {
       display: flex;
@@ -564,6 +595,179 @@
     .btn-secondary:hover {
       border-color: var(--c-accent);
     }
+
+    /* ── Color customizer ───────────────────────────────────── */
+    .color-customize-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      background: none;
+      border: none;
+      font-size: 11px;
+      color: var(--c-accent-dk);
+      cursor: pointer;
+      padding: 2px 0;
+      font-weight: 500;
+      letter-spacing: .01em;
+      transition: color .15s;
+    }
+
+    .color-customize-btn:hover {
+      color: var(--c-text);
+    }
+
+    .color-customize-btn .ccb-arrow {
+      font-size: 9px;
+      transition: transform .2s;
+      display: inline-block;
+    }
+
+    .color-customize-btn.open .ccb-arrow {
+      transform: rotate(180deg);
+    }
+
+    .color-customizer-panel {
+      display: none;
+      margin-top: 8px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+    }
+
+    .color-customizer-panel.open {
+      display: block;
+    }
+
+    .cc-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--c-border);
+      font-size: 11px;
+    }
+
+    .cc-row:last-child {
+      border-bottom: none;
+    }
+
+    .cc-row:hover {
+      background: var(--c-bg);
+    }
+
+    .cc-toggle {
+      width: 28px;
+      height: 16px;
+      background: var(--c-border);
+      border-radius: 8px;
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .15s;
+      border: none;
+      padding: 0;
+    }
+
+    .cc-toggle::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .15s;
+    }
+
+    .cc-toggle.on {
+      background: var(--c-accent-dk);
+    }
+
+    .cc-toggle.on::after {
+      transform: translateX(12px);
+    }
+
+    .cc-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--c-text);
+    }
+
+    .cc-label.disabled {
+      color: var(--c-muted);
+      text-decoration: line-through;
+    }
+
+    .cc-swatch-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .cc-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--c-border);
+      cursor: pointer;
+      transition: border-color .15s, transform .1s;
+      display: block;
+    }
+
+    .cc-swatch:hover {
+      border-color: var(--c-accent-dk);
+      transform: scale(1.1);
+    }
+
+    .cc-swatch.disabled {
+      opacity: .3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .cc-palette-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-md);
+      padding: 8px;
+      z-index: 500;
+      width: 142px;
+    }
+
+    .cc-palette-dropdown.open {
+      display: block;
+    }
+
+    .cc-palette-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .cc-palette-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .1s, border-color .1s;
+    }
+
+    .cc-palette-dot:hover {
+      transform: scale(1.15);
+    }
+
+    .cc-palette-dot.selected {
+      border-color: var(--c-text);
+    }
   </style>
 </head>
 
@@ -613,6 +817,11 @@
         <div id="color-section" style="display:none">
           <div class="section-label">Colorear marcadores por</div>
           <select id="color-col-select"></select>
+          <button class="color-customize-btn" id="color-customize-btn" type="button">
+            <span>Personalizar colores</span>
+            <span class="ccb-arrow">▾</span>
+          </button>
+          <div class="color-customizer-panel" id="color-customizer-panel"></div>
         </div>
 
         <!-- Filtros dinámicos -->
@@ -635,7 +844,15 @@
     <!-- ── Main ─────────────────────────────────────────────── -->
     <main>
 
-      <!-- Métricas -->
+      <!-- KPI Bar — placeholder (funcionalidad futura) -->
+      <div class="kpi-bar" id="kpi-bar">
+        <div class="kpi-placeholder">
+          <span class="kpi-placeholder-icon">📊</span>
+          <span class="kpi-placeholder-text">KPIs — próximamente</span>
+        </div>
+      </div>
+
+      <!-- Métricas originales — ocultas, preservadas para uso futuro -->
       <div class="metrics-bar" id="metrics-bar" style="display:none">
         <div class="metric">
           <div class="metric-label">Total CSV</div>
@@ -862,16 +1079,155 @@
     // APP STATE
     // ══════════════════════════════════════════════════════════════
     const state = {
-      dfMain: null,   // rows from main CSV
-      dfMerged: null,   // after joins
-      dfGeo: null,   // rows with coords
-      complements: [],     // array of parsed rows[]
+      dfMain: null,
+      dfMerged: null,
+      dfGeo: null,
+      complements: [],
       engine: new ColorEngine(),
       colorCol: null,
-      selections: {},     // { col: [selected values] }
+      selections: {},
       markers: [],
       map: null,
+      // { col: { value: { enabled: bool, colorName: string } } }
+      customColors: {},
     };
+
+    // ══════════════════════════════════════════════════════════════
+    // COLOR CUSTOMIZER
+    // ══════════════════════════════════════════════════════════════
+
+    // Paleta visible en el picker (nombres de COLOR_HEX)
+    const PICKER_PALETTE = [
+      "red", "blue", "green", "purple", "orange",
+      "darkred", "cadetblue", "darkblue", "darkgreen", "darkpurple",
+      "pink", "lightred", "lightblue", "lightgreen", "beige",
+      "black", "lightgray", "gray",
+    ];
+
+    // Devuelve config para un valor dado, creándola si no existe
+    function getCustom(col, value) {
+      if (!state.customColors[col]) state.customColors[col] = {};
+      if (!state.customColors[col][value]) {
+        // color inicial = lo que el engine ya asignó
+        const colorName = state.engine.colorFor(col, value);
+        state.customColors[col][value] = { enabled: true, colorName };
+      }
+      return state.customColors[col][value];
+    }
+
+    // Resolve hex final: si custom.enabled → custom.colorName, si no → "gray"
+    function resolveHex(col, value) {
+      if (!state.customColors[col] || !state.customColors[col][value]) {
+        return state.engine.hexFor(col, value);
+      }
+      const cfg = state.customColors[col][value];
+      return cfg.enabled ? (COLOR_HEX[cfg.colorName] || "#888888") : COLOR_HEX["gray"];
+    }
+
+    function buildCustomizerPanel() {
+      const col = state.colorCol;
+      const panel = document.getElementById("color-customizer-panel");
+      panel.innerHTML = "";
+      if (!col || !state.dfGeo) return;
+
+      // Pre-build engine colors so getCustom has a base
+      state.engine.build(state.dfGeo, col);
+
+      const vals = uniqueValues(state.dfGeo, col);
+
+      vals.forEach(value => {
+        const cfg = getCustom(col, value);
+
+        const row = document.createElement("div");
+        row.className = "cc-row";
+
+        // Toggle
+        const toggle = document.createElement("button");
+        toggle.className = "cc-toggle" + (cfg.enabled ? " on" : "");
+        toggle.title = cfg.enabled ? "Desactivar color" : "Activar color";
+        toggle.addEventListener("click", () => {
+          cfg.enabled = !cfg.enabled;
+          toggle.classList.toggle("on", cfg.enabled);
+          toggle.title = cfg.enabled ? "Desactivar color" : "Activar color";
+          label.className = "cc-label" + (cfg.enabled ? "" : " disabled");
+          swatch.className = "cc-swatch" + (cfg.enabled ? "" : " disabled");
+          renderMap();
+          renderLegend(col);
+        });
+
+        // Label
+        const label = document.createElement("span");
+        label.className = "cc-label" + (cfg.enabled ? "" : " disabled");
+        label.textContent = value || "(vacío)";
+        label.title = value;
+
+        // Swatch + palette dropdown
+        const swatchWrap = document.createElement("div");
+        swatchWrap.className = "cc-swatch-wrap";
+
+        const swatch = document.createElement("div");
+        swatch.className = "cc-swatch" + (cfg.enabled ? "" : " disabled");
+        swatch.style.background = COLOR_HEX[cfg.colorName] || "#888";
+        swatch.title = "Elegir color";
+
+        const palDrop = document.createElement("div");
+        palDrop.className = "cc-palette-dropdown";
+
+        const grid = document.createElement("div");
+        grid.className = "cc-palette-grid";
+
+        PICKER_PALETTE.forEach(colorName => {
+          const dot = document.createElement("div");
+          dot.className = "cc-palette-dot" + (colorName === cfg.colorName ? " selected" : "");
+          dot.style.background = COLOR_HEX[colorName];
+          dot.title = colorName;
+          dot.addEventListener("click", e => {
+            e.stopPropagation();
+            cfg.colorName = colorName;
+            swatch.style.background = COLOR_HEX[colorName];
+            // update selected state
+            grid.querySelectorAll(".cc-palette-dot").forEach(d => {
+              d.classList.toggle("selected", d.title === colorName);
+            });
+            palDrop.classList.remove("open");
+            renderMap();
+            renderLegend(col);
+          });
+          grid.appendChild(dot);
+        });
+
+        palDrop.appendChild(grid);
+
+        swatch.addEventListener("click", e => {
+          e.stopPropagation();
+          // close all other dropdowns first
+          document.querySelectorAll(".cc-palette-dropdown.open").forEach(d => {
+            if (d !== palDrop) d.classList.remove("open");
+          });
+          palDrop.classList.toggle("open");
+        });
+
+        document.addEventListener("click", () => palDrop.classList.remove("open"));
+
+        swatchWrap.appendChild(swatch);
+        swatchWrap.appendChild(palDrop);
+
+        row.appendChild(toggle);
+        row.appendChild(label);
+        row.appendChild(swatchWrap);
+        panel.appendChild(row);
+      });
+    }
+
+    // Toggle del panel
+    document.getElementById("color-customize-btn").addEventListener("click", () => {
+      const btn = document.getElementById("color-customize-btn");
+      const panel = document.getElementById("color-customizer-panel");
+      const isOpen = panel.classList.contains("open");
+      if (!isOpen) buildCustomizerPanel();
+      panel.classList.toggle("open");
+      btn.classList.toggle("open");
+    });
 
     // ══════════════════════════════════════════════════════════════
     // MAP
@@ -923,7 +1279,7 @@
         if (isNaN(lat) || isNaN(lon)) return;
 
         const colorVal = row[col] || "";
-        const hex = state.engine.hexFor(col, colorVal);
+        const hex = resolveHex(col, colorVal);
         const icon = buildMarkerIcon(hex);
 
         const rubro = row.rubro || "—";
@@ -970,7 +1326,7 @@
     // METRICS
     // ══════════════════════════════════════════════════════════════
     function updateMetrics(filtered) {
-      document.getElementById("metrics-bar").style.display = "flex";
+      // metrics-bar hidden (Sprint 4) — document.getElementById("metrics-bar").style.display = "flex";
       document.getElementById("m-total").textContent = state.dfMerged.length;
       document.getElementById("m-coords").textContent = state.dfGeo.length;
       document.getElementById("m-success").textContent = filtered.filter(r => r.validation_status === "SUCCESS").length;
@@ -988,13 +1344,34 @@
 
       document.getElementById("legend-title").textContent = humanize(col);
       const container = document.getElementById("legend-items");
-      container.innerHTML = items.map(([cat, colorName]) => {
-        const hex = COLOR_HEX[colorName] || "#888";
+
+      let hasDisabled = false;
+      const rows = items.map(([cat, colorName]) => {
+        const cfg = state.customColors[col] && state.customColors[col][cat];
+        // Si no hay config custom aún, tratar como enabled con color del engine
+        const enabled = cfg ? cfg.enabled : true;
+        const hex = cfg
+          ? (cfg.enabled ? (COLOR_HEX[cfg.colorName] || "#888") : null)
+          : (COLOR_HEX[colorName] || "#888");
+
+        if (!enabled) { hasDisabled = true; return null; }
+
         return `<div class="legend-item">
-      <div class="legend-dot" style="background:${hex}"></div>
-      <span>${cat || "(vacío)"}</span>
-    </div>`;
-      }).join("");
+          <div class="legend-dot" style="background:${hex}"></div>
+          <span>${cat || "(vacío)"}</span>
+        </div>`;
+      }).filter(Boolean);
+
+      // "Otros" al final si hay valores desactivados
+      if (hasDisabled) {
+        rows.push(`<div class="legend-item">
+          <div class="legend-dot" style="background:${COLOR_HEX.gray}"></div>
+          <span style="color:var(--c-muted)">Otros</span>
+        </div>`);
+      }
+
+      if (!rows.length) { overlay.classList.remove("visible"); return; }
+      container.innerHTML = rows.join("");
       overlay.classList.add("visible");
     }
 
@@ -1147,6 +1524,9 @@
 
       sel.addEventListener("change", () => {
         state.colorCol = sel.value;
+        // Si el panel de personalización estaba abierto, reconstruirlo para la nueva columna
+        const panel = document.getElementById("color-customizer-panel");
+        if (panel.classList.contains("open")) buildCustomizerPanel();
         renderMap();
       });
     }
