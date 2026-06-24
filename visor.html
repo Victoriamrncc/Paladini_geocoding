@@ -730,15 +730,13 @@
 
     .cc-palette-dropdown {
       display: none;
-      position: absolute;
-      top: calc(100% + 4px);
-      right: 0;
+      position: fixed;
       background: var(--c-surface);
       border: 1px solid var(--c-border);
       border-radius: var(--r-md);
       box-shadow: var(--shadow-md);
       padding: 8px;
-      z-index: 500;
+      z-index: 9000;
       width: 142px;
     }
 
@@ -925,10 +923,21 @@
 
       _getPalette(col) {
         if (!this._palettes[col]) {
-          const mapping = col === "rubro" ? { ...BASE_RUBRO_COLORS } : {};
-          const used = col === "rubro" ? new Set(Object.values(BASE_RUBRO_COLORS)) : new Set();
+          // Mapping vacío al inicio — solo se puebla con valores que
+          // realmente existan en el CSV (via build/colorFor).
+          // Para rubro, los colores base se usan como PREFERENCIA
+          // en nextColor(), no como pre-carga.
+          const mapping = {};
+          const used = new Set();
           let fbIdx = 0;
-          const nextColor = () => {
+
+          const nextColor = (value) => {
+            // Para rubro: si el valor tiene un color base preferido y está libre, usarlo
+            if (col === "rubro" && BASE_RUBRO_COLORS[value] && !used.has(BASE_RUBRO_COLORS[value])) {
+              used.add(BASE_RUBRO_COLORS[value]);
+              return BASE_RUBRO_COLORS[value];
+            }
+            // Fallback general: siguiente color libre de la paleta
             while (fbIdx < FALLBACK_PALETTE.length) {
               const c = FALLBACK_PALETTE[fbIdx++];
               if (!used.has(c)) { used.add(c); return c; }
@@ -944,7 +953,7 @@
         const v = (value || "").trim();
         if (!v) return "gray";
         const p = this._getPalette(col);
-        if (!p.mapping[v]) p.mapping[v] = p.nextColor();
+        if (!p.mapping[v]) p.mapping[v] = p.nextColor(v);
         return p.mapping[v];
       }
 
@@ -959,7 +968,7 @@
       }
 
       build(rows, col) {
-        const vals = [...new Set(rows.map(r => r[col] || ""))];
+        const vals = [...new Set(rows.map(r => r[col] || "").filter(v => v !== ""))];
         vals.forEach(v => this.colorFor(col, v));
       }
     }
@@ -1204,7 +1213,32 @@
           document.querySelectorAll(".cc-palette-dropdown.open").forEach(d => {
             if (d !== palDrop) d.classList.remove("open");
           });
+
+          const isOpen = palDrop.classList.contains("open");
           palDrop.classList.toggle("open");
+
+          if (!isOpen) {
+            // Posicionar con fixed relativo al swatch en el viewport
+            const rect = swatch.getBoundingClientRect();
+            const dropH = 120; // alto estimado del dropdown (4 filas × ~30px)
+            const dropW = 142;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceRight = window.innerWidth - rect.right;
+
+            // Vertical: abrir hacia arriba si no hay espacio abajo
+            if (spaceBelow >= dropH) {
+              palDrop.style.top = (rect.bottom + 4) + "px";
+              palDrop.style.bottom = "";
+            } else {
+              palDrop.style.bottom = (window.innerHeight - rect.top + 4) + "px";
+              palDrop.style.top = "";
+            }
+
+            // Horizontal: alinear a la derecha del swatch, ajustar si se sale
+            const leftIdeal = rect.right - dropW;
+            palDrop.style.left = Math.max(4, leftIdeal) + "px";
+            palDrop.style.right = "";
+          }
         });
 
         document.addEventListener("click", () => palDrop.classList.remove("open"));
