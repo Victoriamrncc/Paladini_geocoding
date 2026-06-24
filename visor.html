@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visor de Direcciones</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <!-- PapaParse -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <style>
+    /* ── Tokens ─────────────────────────────────────────────── */
+    :root {
+      --c-bg: #f7f8f9;
+      --c-surface: #ffffff;
+      --c-border: #e2e4e6;
+      --c-accent: #9FA1A3;
+      --c-accent-dk: #6e7072;
+      --c-text: #1a1c1e;
+      --c-muted: #6b7280;
+      --c-success: #22863a;
+      --c-warning: #e08000;
+      --c-error: #c0392b;
+
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, .10);
+
+      --sidebar-w: 300px;
+      --header-h: 54px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      height: var(--header-h);
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
+      z-index: 100;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--c-accent);
+    }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -.01em;
+      color: var(--c-text);
+    }
+
+    header .subtitle {
+      font-size: 12px;
+      color: var(--c-muted);
+      margin-left: 4px;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────────── */
+    aside {
+      width: var(--sidebar-w);
+      background: var(--c-surface);
+      border-right: 1px solid var(--c-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: var(--c-border);
+      border-radius: 4px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--c-accent-dk);
+      margin-bottom: 8px;
+    }
+
+    /* upload areas */
+    .upload-zone {
+      border: 1.5px dashed var(--c-border);
+      border-radius: var(--r-md);
+      padding: 14px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      position: relative;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--c-accent);
+      background: #f4f5f6;
+    }
+
+    .upload-zone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-zone .uz-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .upload-zone .uz-text {
+      font-size: 12px;
+      color: var(--c-muted);
+      line-height: 1.4;
+    }
+
+    .upload-zone .uz-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    /* add complement btn */
+    .btn-ghost {
+      width: 100%;
+      background: none;
+      border: 1.5px dashed var(--c-border);
+      border-radius: var(--r-sm);
+      padding: 7px;
+      font-size: 12px;
+      color: var(--c-muted);
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--c-accent);
+      color: var(--c-text);
+    }
+
+    .complement-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .complement-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--c-bg);
+      border-radius: var(--r-sm);
+      padding: 6px 10px;
+      font-size: 11px;
+      color: var(--c-muted);
+    }
+
+    .complement-item span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .complement-item button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--c-accent);
+      font-size: 14px;
+      padding: 0 0 0 8px;
+      line-height: 1;
+    }
+
+    .complement-item button:hover {
+      color: var(--c-error);
+    }
+
+    /* selects & controls */
+    select,
+    .filter-select {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      font-size: 12px;
+      background: var(--c-bg);
+      color: var(--c-text);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239FA1A3' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--c-accent);
+    }
+
+    /* multi-select pills */
+    .ms-wrapper {
+      position: relative;
+    }
+
+    .ms-display {
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      padding: 5px 30px 5px 8px;
+      min-height: 34px;
+      background: var(--c-bg);
+      cursor: pointer;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239FA1A3' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    .ms-display.open {
+      border-color: var(--c-accent);
+    }
+
+    .ms-pill {
+      background: var(--c-accent);
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .ms-placeholder {
+      font-size: 11px;
+      color: var(--c-muted);
+    }
+
+    .ms-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 3px);
+      left: 0;
+      right: 0;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      box-shadow: var(--shadow-md);
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 200;
+    }
+
+    .ms-dropdown.open {
+      display: block;
+    }
+
+    .ms-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background .1s;
+    }
+
+    .ms-option:hover {
+      background: var(--c-bg);
+    }
+
+    .ms-option input[type=checkbox] {
+      accent-color: var(--c-accent);
+    }
+
+    .ms-select-all {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--c-border);
+      font-size: 10px;
+      color: var(--c-accent-dk);
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      gap: 10px;
+    }
+
+    .ms-select-all span:hover {
+      text-decoration: underline;
+    }
+
+    .filter-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .filter-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--c-muted);
+    }
+
+    /* divider */
+    .divider {
+      height: 1px;
+      background: var(--c-border);
+      margin: 2px 0;
+    }
+
+    /* ── Main content ─────────────────────────────────────────── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── KPI bar placeholder ────────────────────────────────── */
+    .kpi-bar {
+      border-bottom: 1px solid var(--c-border);
+      background: var(--c-surface);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 16px;
+    }
+
+    .kpi-placeholder {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--c-muted);
+    }
+
+    .kpi-placeholder-icon {
+      font-size: 14px;
+      opacity: .5;
+    }
+
+    .kpi-placeholder-text {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      opacity: .45;
+    }
+
+    /* metrics bar */
+    .metrics-bar {
+      display: flex;
+      gap: 1px;
+      background: var(--c-border);
+      border-bottom: 1px solid var(--c-border);
+      flex-shrink: 0;
+    }
+
+    .metric {
+      flex: 1;
+      background: var(--c-surface);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--c-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--c-text);
+    }
+
+    .metric-value.success {
+      color: var(--c-success);
+    }
+
+    .metric-value.warning {
+      color: var(--c-warning);
+    }
+
+    .metric-value.error {
+      color: var(--c-error);
+    }
+
+    /* map */
+    #map {
+      flex: 1;
+      z-index: 1;
+    }
+
+    /* legend overlay */
+    .legend-overlay {
+      position: absolute;
+      bottom: 24px;
+      right: 12px;
+      z-index: 400;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-md);
+      max-width: 220px;
+      display: none;
+    }
+
+    .legend-overlay.visible {
+      display: block;
+    }
+
+    .legend-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--c-accent-dk);
+      margin-bottom: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: var(--c-text);
+      margin-bottom: 5px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* empty state */
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--c-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .empty-state .es-icon {
+      font-size: 40px;
+      opacity: .4;
+    }
+
+    .empty-state p {
+      max-width: 260px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--c-text);
+      color: #fff;
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity .25s;
+      z-index: 9999;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      opacity: 1;
+    }
+
+    /* btn primary */
+    .btn-primary {
+      width: 100%;
+      background: var(--c-text);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-sm);
+      padding: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-primary:hover {
+      background: #333;
+    }
+
+    .btn-primary:disabled {
+      background: var(--c-border);
+      color: var(--c-muted);
+      cursor: not-allowed;
+    }
+
+    /* download btn */
+    .btn-secondary {
+      width: 100%;
+      background: var(--c-bg);
+      color: var(--c-text);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      padding: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color .15s;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--c-accent);
+    }
+
+    /* ── Color customizer ───────────────────────────────────── */
+    .color-customize-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      background: none;
+      border: none;
+      font-size: 11px;
+      color: var(--c-accent-dk);
+      cursor: pointer;
+      padding: 2px 0;
+      font-weight: 500;
+      letter-spacing: .01em;
+      transition: color .15s;
+    }
+
+    .color-customize-btn:hover {
+      color: var(--c-text);
+    }
+
+    .color-customize-btn .ccb-arrow {
+      font-size: 9px;
+      transition: transform .2s;
+      display: inline-block;
+    }
+
+    .color-customize-btn.open .ccb-arrow {
+      transform: rotate(180deg);
+    }
+
+    .color-customizer-panel {
+      display: none;
+      margin-top: 8px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+    }
+
+    .color-customizer-panel.open {
+      display: block;
+    }
+
+    .cc-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--c-border);
+      font-size: 11px;
+    }
+
+    .cc-row:last-child {
+      border-bottom: none;
+    }
+
+    .cc-row:hover {
+      background: var(--c-bg);
+    }
+
+    .cc-toggle {
+      width: 28px;
+      height: 16px;
+      background: var(--c-border);
+      border-radius: 8px;
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .15s;
+      border: none;
+      padding: 0;
+    }
+
+    .cc-toggle::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .15s;
+    }
+
+    .cc-toggle.on {
+      background: var(--c-accent-dk);
+    }
+
+    .cc-toggle.on::after {
+      transform: translateX(12px);
+    }
+
+    .cc-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--c-text);
+    }
+
+    .cc-label.disabled {
+      color: var(--c-muted);
+      text-decoration: line-through;
+    }
+
+    .cc-swatch-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .cc-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--c-border);
+      cursor: pointer;
+      transition: border-color .15s, transform .1s;
+      display: block;
+    }
+
+    .cc-swatch:hover {
+      border-color: var(--c-accent-dk);
+      transform: scale(1.1);
+    }
+
+    .cc-swatch.disabled {
+      opacity: .3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .cc-palette-dropdown {
+      display: none;
+      position: fixed;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-md);
+      padding: 8px;
+      z-index: 9000;
+      width: 142px;
+    }
+
+    .cc-palette-dropdown.open {
+      display: block;
+    }
+
+    .cc-palette-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .cc-palette-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .1s, border-color .1s;
+    }
+
+    .cc-palette-dot:hover {
+      transform: scale(1.15);
+    }
+
+    .cc-palette-dot.selected {
+      border-color: var(--c-text);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header>
+    <div class="logo-dot"></div>
+    <h1>Visor de Direcciones</h1>
+    <span class="subtitle">Visualización geográfica</span>
+  </header>
+
+  <!-- ── Body ────────────────────────────────────────────────── -->
+  <div class="app-body">
+
+    <!-- ── Sidebar ──────────────────────────────────────────── -->
+    <aside>
+      <div class="sidebar-scroll">
+
+        <!-- CSV Principal -->
+        <div>
+          <div class="section-label">Archivo principal</div>
+          <div class="upload-zone" id="zone-main">
+            <input type="file" accept=".csv" id="input-main" />
+            <div class="uz-icon">📄</div>
+            <div class="uz-text">CSV de resultados<br><strong>Hacé clic para subir</strong></div>
+            <div class="uz-name" id="main-name"></div>
+          </div>
+        </div>
+
+        <!-- CSV Complementarios -->
+        <div>
+          <div class="section-label">Complementarios (opcional)</div>
+          <div class="uz-text" style="font-size:11px;color:var(--c-muted);margin-bottom:8px;">
+            Se vinculan por <code>id_cliente</code>
+          </div>
+          <div class="complement-list" id="complement-list"></div>
+          <label class="btn-ghost" style="margin-top:6px;display:block;text-align:center;cursor:pointer;">
+            <input type="file" accept=".csv" id="input-complement" multiple style="display:none" />
+            + Agregar complementario
+          </label>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Coloreado -->
+        <div id="color-section" style="display:none">
+          <div class="section-label">Colorear marcadores por</div>
+          <select id="color-col-select"></select>
+          <button class="color-customize-btn" id="color-customize-btn" type="button">
+            <span>Personalizar colores</span>
+            <span class="ccb-arrow">▾</span>
+          </button>
+          <div class="color-customizer-panel" id="color-customizer-panel"></div>
+        </div>
+
+        <!-- Filtros dinámicos -->
+        <div id="filters-section" style="display:none">
+          <div class="section-label">Filtros</div>
+          <div id="filters-container" style="display:flex;flex-direction:column;gap:12px;"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Descarga -->
+        <div id="download-section" style="display:none">
+          <div class="section-label">Exportar</div>
+          <button class="btn-secondary" id="btn-download">⬇ Descargar filtrado (CSV)</button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── Main ─────────────────────────────────────────────── -->
+    <main>
+
+      <!-- KPI Bar — placeholder (funcionalidad futura) -->
+      <div class="kpi-bar" id="kpi-bar">
+        <div class="kpi-placeholder">
+          <span class="kpi-placeholder-icon">📊</span>
+          <span class="kpi-placeholder-text">KPIs — próximamente</span>
+        </div>
+      </div>
+
+      <!-- Métricas originales — ocultas, preservadas para uso futuro -->
+      <div class="metrics-bar" id="metrics-bar" style="display:none">
+        <div class="metric">
+          <div class="metric-label">Total CSV</div>
+          <div class="metric-value" id="m-total">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Con coordenadas</div>
+          <div class="metric-value" id="m-coords">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">SUCCESS</div>
+          <div class="metric-value success" id="m-success">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">FAILED</div>
+          <div class="metric-value warning" id="m-failed">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">ERROR</div>
+          <div class="metric-value error" id="m-error">—</div>
+        </div>
+      </div>
+
+      <!-- Mapa -->
+      <div id="map"></div>
+
+      <!-- Leyenda -->
+      <div class="legend-overlay" id="legend-overlay">
+        <div class="legend-title" id="legend-title">Leyenda</div>
+        <div id="legend-items"></div>
+      </div>
+
+      <!-- Estado vacío -->
+      <div class="empty-state" id="empty-state">
+        <div class="es-icon">🗺️</div>
+        <p>Subí un CSV de resultados para visualizar los puntos en el mapa.</p>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script>
+    // ══════════════════════════════════════════════════════════════
+    // COLOR ENGINE
+    // ══════════════════════════════════════════════════════════════
+    const COLOR_HEX = {
+      red: "#d63b3b", blue: "#4a90d9", green: "#3aad5b", purple: "#8b5db8",
+      orange: "#e6820e", darkred: "#8b0000", lightred: "#f07070", beige: "#d9c89b",
+      darkblue: "#00008b", darkgreen: "#006400", cadetblue: "#5f9ea0",
+      darkpurple: "#580058", white: "#f0f0f0", pink: "#f0a0c0", lightblue: "#add8e6",
+      lightgreen: "#90ee90", gray: "#888888", black: "#333333", lightgray: "#cccccc",
+    };
+
+    const BASE_RUBRO_COLORS = {
+      "Socio Estratégico": "red", "Supermercado": "blue", "Distribuidor": "green",
+      "Mayorista": "orange", "Gran Cadena": "darkred", "Almacén": "cadetblue",
+    };
+
+    const FALLBACK_PALETTE = [
+      "red", "blue", "green", "purple", "orange", "darkred", "cadetblue",
+      "darkblue", "darkgreen", "darkpurple", "pink", "lightred",
+      "lightblue", "lightgreen", "beige", "black", "lightgray",
+    ];
+
+    class ColorEngine {
+      constructor() { this._palettes = {}; }
+
+      _getPalette(col) {
+        if (!this._palettes[col]) {
+          // Mapping vacío al inicio — solo se puebla con valores que
+          // realmente existan en el CSV (via build/colorFor).
+          // Para rubro, los colores base se usan como PREFERENCIA
+          // en nextColor(), no como pre-carga.
+          const mapping = {};
+          const used = new Set();
+          let fbIdx = 0;
+
+          const nextColor = (value) => {
+            // Para rubro: si el valor tiene un color base preferido y está libre, usarlo
+            if (col === "rubro" && BASE_RUBRO_COLORS[value] && !used.has(BASE_RUBRO_COLORS[value])) {
+              used.add(BASE_RUBRO_COLORS[value]);
+              return BASE_RUBRO_COLORS[value];
+            }
+            // Fallback general: siguiente color libre de la paleta
+            while (fbIdx < FALLBACK_PALETTE.length) {
+              const c = FALLBACK_PALETTE[fbIdx++];
+              if (!used.has(c)) { used.add(c); return c; }
+            }
+            return "gray";
+          };
+          this._palettes[col] = { mapping, used, nextColor };
+        }
+        return this._palettes[col];
+      }
+
+      colorFor(col, value) {
+        const v = (value || "").trim();
+        if (!v) return "gray";
+        const p = this._getPalette(col);
+        if (!p.mapping[v]) p.mapping[v] = p.nextColor(v);
+        return p.mapping[v];
+      }
+
+      hexFor(col, value) {
+        return COLOR_HEX[this.colorFor(col, value)] || "#888888";
+      }
+
+      legend(col) {
+        const p = this._palettes[col];
+        if (!p) return [];
+        return Object.entries(p.mapping);
+      }
+
+      build(rows, col) {
+        const vals = [...new Set(rows.map(r => r[col] || "").filter(v => v !== ""))];
+        vals.forEach(v => this.colorFor(col, v));
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // FILTER ENGINE
+    // ══════════════════════════════════════════════════════════════
+    const CORE_FILTER_COLS = { provincia: "Provincia", validation_status: "Estado", rubro: "Rubro" };
+
+    const NEVER_FILTER = new Set([
+      "latitude", "longitude", "original_address", "geocoded_address",
+      "reverse_geocoded_address", "input_query", "lat_original", "lon_original",
+      "distance_meters", "timestamp", "archivo", "error_message", "id_cliente", "nombre",
+      "place_id", "formatted_address", "sucursal_asignada",
+    ]);
+
+    const NEVER_COLOR = new Set([
+      "id_cliente", "nombre", "latitude", "longitude", "original_address", "formatted_address",
+      "geocoded_address", "reverse_geocoded_address", "place_id", "input_query",
+      "lat_original", "lon_original", "distance_meters", "timestamp", "archivo",
+      "error_message", "validation_status",
+    ]);
+
+    function availableFilters(rows) {
+      if (!rows.length) return {};
+      const cols = Object.keys(rows[0]);
+      const result = {};
+      // core first
+      for (const [col, label] of Object.entries(CORE_FILTER_COLS)) {
+        if (cols.includes(col) && isFilterable(rows, col)) result[col] = label;
+      }
+      // dynamic
+      const dynamic = cols
+        .filter(c => !CORE_FILTER_COLS[c] && !NEVER_FILTER.has(c) && isFilterable(rows, c))
+        .sort();
+      for (const col of dynamic) result[col] = humanize(col);
+      return result;
+    }
+
+    function isFilterable(rows, col) {
+      return rows.some(r => r[col] != null && r[col] !== "");
+    }
+
+    function uniqueValues(rows, col) {
+      return [...new Set(rows.map(r => r[col]).filter(v => v != null && v !== ""))].sort();
+    }
+
+    function applyFilters(rows, selections) {
+      return rows.filter(row =>
+        Object.entries(selections).every(([col, vals]) =>
+          !vals.length || vals.includes(row[col])
+        )
+      );
+    }
+
+    function colorableColumns(rows) {
+      if (!rows.length) return [];
+      const cols = Object.keys(rows[0]);
+      const cands = cols.filter(col => {
+        if (NEVER_COLOR.has(col)) return false;
+        const vals = rows.map(r => r[col]).filter(v => v != null && v !== "");
+        const uniq = new Set(vals);
+        return uniq.size >= 1 && uniq.size <= 50 && !isNumericCol(rows, col);
+      });
+      return cands.sort((a, b) => {
+        if (a === "rubro") return -1; if (b === "rubro") return 1;
+        return a.localeCompare(b);
+      });
+    }
+
+    function isNumericCol(rows, col) {
+      const sample = rows.slice(0, 20).map(r => r[col]).filter(v => v != null && v !== "");
+      return sample.length > 0 && sample.every(v => !isNaN(Number(v)));
+    }
+
+    function humanize(col) {
+      return col.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // DATA LOADER — CSV merge by id_cliente
+    // ══════════════════════════════════════════════════════════════
+    function normalizeHeaders(rows) {
+      return rows.map(row => {
+        const n = {};
+        for (const [k, v] of Object.entries(row)) n[k.trim().toLowerCase()] = v;
+        return n;
+      });
+    }
+
+    function mergeComplements(mainRows, compArrays) {
+      let result = mainRows.map(r => ({ ...r }));
+      compArrays.forEach((comp, i) => {
+        if (!comp.length || !("id_cliente" in comp[0])) {
+          showToast(`Complementario #${i + 1} sin columna id_cliente — ignorado`);
+          return;
+        }
+        const idx = {};
+        comp.forEach(r => { idx[r.id_cliente] = r; });
+        const resultCols = new Set(Object.keys(result[0] || {}));
+        result = result.map(row => {
+          const match = idx[row.id_cliente];
+          if (!match) return row;
+          const merged = { ...row };
+          for (const [k, v] of Object.entries(match)) {
+            if (k === "id_cliente") continue;
+            const key = resultCols.has(k) ? `${k}_dup_${i + 1}` : k;
+            merged[key] = v;
+          }
+          return merged;
+        });
+      });
+      return result;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // APP STATE
+    // ══════════════════════════════════════════════════════════════
+    const state = {
+      dfMain: null,
+      dfMerged: null,
+      dfGeo: null,
+      complements: [],
+      engine: new ColorEngine(),
+      colorCol: null,
+      selections: {},
+      markers: [],
+      map: null,
+      // { col: { value: { enabled: bool, colorName: string } } }
+      customColors: {},
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // COLOR CUSTOMIZER
+    // ══════════════════════════════════════════════════════════════
+
+    // Paleta visible en el picker (nombres de COLOR_HEX)
+    const PICKER_PALETTE = [
+      "red", "blue", "green", "purple", "orange",
+      "darkred", "cadetblue", "darkblue", "darkgreen", "darkpurple",
+      "pink", "lightred", "lightblue", "lightgreen", "beige",
+      "black", "lightgray", "gray",
+    ];
+
+    // Devuelve config para un valor dado, creándola si no existe
+    function getCustom(col, value) {
+      if (!state.customColors[col]) state.customColors[col] = {};
+      if (!state.customColors[col][value]) {
+        // color inicial = lo que el engine ya asignó
+        const colorName = state.engine.colorFor(col, value);
+        state.customColors[col][value] = { enabled: true, colorName };
+      }
+      return state.customColors[col][value];
+    }
+
+    // Resolve hex final: si custom.enabled → custom.colorName, si no → "gray"
+    function resolveHex(col, value) {
+      if (!state.customColors[col] || !state.customColors[col][value]) {
+        return state.engine.hexFor(col, value);
+      }
+      const cfg = state.customColors[col][value];
+      return cfg.enabled ? (COLOR_HEX[cfg.colorName] || "#888888") : COLOR_HEX["gray"];
+    }
+
+    function buildCustomizerPanel() {
+      const col = state.colorCol;
+      const panel = document.getElementById("color-customizer-panel");
+      panel.innerHTML = "";
+      if (!col || !state.dfGeo) return;
+
+      // Pre-build engine colors so getCustom has a base
+      state.engine.build(state.dfGeo, col);
+
+      const vals = uniqueValues(state.dfGeo, col);
+
+      vals.forEach(value => {
+        const cfg = getCustom(col, value);
+
+        const row = document.createElement("div");
+        row.className = "cc-row";
+
+        // Toggle
+        const toggle = document.createElement("button");
+        toggle.className = "cc-toggle" + (cfg.enabled ? " on" : "");
+        toggle.title = cfg.enabled ? "Desactivar color" : "Activar color";
+        toggle.addEventListener("click", () => {
+          cfg.enabled = !cfg.enabled;
+          toggle.classList.toggle("on", cfg.enabled);
+          toggle.title = cfg.enabled ? "Desactivar color" : "Activar color";
+          label.className = "cc-label" + (cfg.enabled ? "" : " disabled");
+          swatch.className = "cc-swatch" + (cfg.enabled ? "" : " disabled");
+          renderMap();
+          renderLegend(col);
+        });
+
+        // Label
+        const label = document.createElement("span");
+        label.className = "cc-label" + (cfg.enabled ? "" : " disabled");
+        label.textContent = value || "(vacío)";
+        label.title = value;
+
+        // Swatch + palette dropdown
+        const swatchWrap = document.createElement("div");
+        swatchWrap.className = "cc-swatch-wrap";
+
+        const swatch = document.createElement("div");
+        swatch.className = "cc-swatch" + (cfg.enabled ? "" : " disabled");
+        swatch.style.background = COLOR_HEX[cfg.colorName] || "#888";
+        swatch.title = "Elegir color";
+
+        const palDrop = document.createElement("div");
+        palDrop.className = "cc-palette-dropdown";
+
+        const grid = document.createElement("div");
+        grid.className = "cc-palette-grid";
+
+        PICKER_PALETTE.forEach(colorName => {
+          const dot = document.createElement("div");
+          dot.className = "cc-palette-dot" + (colorName === cfg.colorName ? " selected" : "");
+          dot.style.background = COLOR_HEX[colorName];
+          dot.title = colorName;
+          dot.addEventListener("click", e => {
+            e.stopPropagation();
+            cfg.colorName = colorName;
+            swatch.style.background = COLOR_HEX[colorName];
+            // update selected state
+            grid.querySelectorAll(".cc-palette-dot").forEach(d => {
+              d.classList.toggle("selected", d.title === colorName);
+            });
+            palDrop.classList.remove("open");
+            renderMap();
+            renderLegend(col);
+          });
+          grid.appendChild(dot);
+        });
+
+        palDrop.appendChild(grid);
+
+        swatch.addEventListener("click", e => {
+          e.stopPropagation();
+          // close all other dropdowns first
+          document.querySelectorAll(".cc-palette-dropdown.open").forEach(d => {
+            if (d !== palDrop) d.classList.remove("open");
+          });
+
+          const isOpen = palDrop.classList.contains("open");
+          palDrop.classList.toggle("open");
+
+          if (!isOpen) {
+            // Posicionar con fixed relativo al swatch en el viewport
+            const rect = swatch.getBoundingClientRect();
+            const dropH = 120; // alto estimado del dropdown (4 filas × ~30px)
+            const dropW = 142;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceRight = window.innerWidth - rect.right;
+
+            // Vertical: abrir hacia arriba si no hay espacio abajo
+            if (spaceBelow >= dropH) {
+              palDrop.style.top = (rect.bottom + 4) + "px";
+              palDrop.style.bottom = "";
+            } else {
+              palDrop.style.bottom = (window.innerHeight - rect.top + 4) + "px";
+              palDrop.style.top = "";
+            }
+
+            // Horizontal: alinear a la derecha del swatch, ajustar si se sale
+            const leftIdeal = rect.right - dropW;
+            palDrop.style.left = Math.max(4, leftIdeal) + "px";
+            palDrop.style.right = "";
+          }
+        });
+
+        document.addEventListener("click", () => palDrop.classList.remove("open"));
+
+        swatchWrap.appendChild(swatch);
+        swatchWrap.appendChild(palDrop);
+
+        row.appendChild(toggle);
+        row.appendChild(label);
+        row.appendChild(swatchWrap);
+        panel.appendChild(row);
+      });
+    }
+
+    // Toggle del panel
+    document.getElementById("color-customize-btn").addEventListener("click", () => {
+      const btn = document.getElementById("color-customize-btn");
+      const panel = document.getElementById("color-customizer-panel");
+      const isOpen = panel.classList.contains("open");
+      if (!isOpen) buildCustomizerPanel();
+      panel.classList.toggle("open");
+      btn.classList.toggle("open");
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // MAP
+    // ══════════════════════════════════════════════════════════════
+    function initMap() {
+      state.map = L.map("map", { zoomControl: true }).setView([-34.6037, -58.3816], 10);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        attribution: '© <a href="https://carto.com/">CARTO</a>',
+        subdomains: "abcd", maxZoom: 19,
+      }).addTo(state.map);
+    }
+
+    function buildMarkerIcon(hex) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="34" viewBox="0 0 24 34">
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 8.25 12 22 12 22S24 20.25 24 12C24 5.373 18.627 0 12 0z"
+      fill="${hex}" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="12" cy="12" r="5" fill="#fff" opacity="0.85"/>
+  </svg>`;
+      return L.divIcon({
+        html: svg,
+        className: "",
+        iconSize: [24, 34],
+        iconAnchor: [12, 34],
+        popupAnchor: [0, -34],
+      });
+    }
+
+    function renderMap() {
+      // clear old markers
+      state.markers.forEach(m => m.remove());
+      state.markers = [];
+
+      const col = state.colorCol || "rubro";
+      const filtered = applyFilters(state.dfGeo, state.selections);
+
+      if (!filtered.length) {
+        updateMetrics(filtered);
+        renderLegend(col);
+        return;
+      }
+
+      // build colors for visible values
+      state.engine.build(filtered, col);
+
+      const bounds = [];
+      filtered.forEach(row => {
+        const lat = parseFloat(row.latitude);
+        const lon = parseFloat(row.longitude);
+        if (isNaN(lat) || isNaN(lon)) return;
+
+        const colorVal = row[col] || "";
+        const hex = resolveHex(col, colorVal);
+        const icon = buildMarkerIcon(hex);
+
+        const rubro = row.rubro || "—";
+        const nombre = row.nombre || "—";
+        const idCli = row.id_cliente || "—";
+        const sucursal = row.sucursal_asignada || "—";
+        const dir = row.original_address || "—";
+
+        let extraLine = "";
+        if (col !== "rubro" && colorVal) {
+          extraLine = `<tr><td style="color:#666;padding-right:8px;">${humanize(col)}</td><td><b>${colorVal}</b></td></tr>`;
+        }
+
+        const popup = `
+      <div style="font-family:system-ui,sans-serif;font-size:12px;min-width:190px;line-height:1.6">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">${nombre}</div>
+        <div style="color:#888;font-size:10px;margin-bottom:6px">ID: ${idCli}</div>
+        <table style="border-collapse:collapse;width:100%">
+          ${extraLine}
+          <tr><td style="color:#666;padding-right:8px;">Rubro</td><td>${rubro}</td></tr>
+          <tr><td style="color:#666;padding-right:8px;">Sucursal</td><td>${sucursal}</td></tr>
+          <tr><td style="color:#666;padding-right:8px;">Dirección</td><td>${dir}</td></tr>
+        </table>
+      </div>`;
+
+        const marker = L.marker([lat, lon], { icon })
+          .bindPopup(popup, { maxWidth: 280 })
+          .bindTooltip(nombre, { direction: "top", offset: [0, -8] });
+
+        marker.addTo(state.map);
+        state.markers.push(marker);
+        bounds.push([lat, lon]);
+      });
+
+      if (bounds.length) {
+        state.map.fitBounds(bounds, { padding: [40, 40] });
+      }
+
+      updateMetrics(filtered);
+      renderLegend(col);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // METRICS
+    // ══════════════════════════════════════════════════════════════
+    function updateMetrics(filtered) {
+      // metrics-bar hidden (Sprint 4) — document.getElementById("metrics-bar").style.display = "flex";
+      document.getElementById("m-total").textContent = state.dfMerged.length;
+      document.getElementById("m-coords").textContent = state.dfGeo.length;
+      document.getElementById("m-success").textContent = filtered.filter(r => r.validation_status === "SUCCESS").length;
+      document.getElementById("m-failed").textContent = filtered.filter(r => r.validation_status === "FAILED").length;
+      document.getElementById("m-error").textContent = filtered.filter(r => r.validation_status === "ERROR").length;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // LEGEND
+    // ══════════════════════════════════════════════════════════════
+    function renderLegend(col) {
+      const items = state.engine.legend(col);
+      const overlay = document.getElementById("legend-overlay");
+      if (!items.length) { overlay.classList.remove("visible"); return; }
+
+      document.getElementById("legend-title").textContent = humanize(col);
+      const container = document.getElementById("legend-items");
+
+      let hasDisabled = false;
+      const rows = items.map(([cat, colorName]) => {
+        const cfg = state.customColors[col] && state.customColors[col][cat];
+        // Si no hay config custom aún, tratar como enabled con color del engine
+        const enabled = cfg ? cfg.enabled : true;
+        const hex = cfg
+          ? (cfg.enabled ? (COLOR_HEX[cfg.colorName] || "#888") : null)
+          : (COLOR_HEX[colorName] || "#888");
+
+        if (!enabled) { hasDisabled = true; return null; }
+
+        return `<div class="legend-item">
+          <div class="legend-dot" style="background:${hex}"></div>
+          <span>${cat || "(vacío)"}</span>
+        </div>`;
+      }).filter(Boolean);
+
+      // "Otros" al final si hay valores desactivados
+      if (hasDisabled) {
+        rows.push(`<div class="legend-item">
+          <div class="legend-dot" style="background:${COLOR_HEX.gray}"></div>
+          <span style="color:var(--c-muted)">Otros</span>
+        </div>`);
+      }
+
+      if (!rows.length) { overlay.classList.remove("visible"); return; }
+      container.innerHTML = rows.join("");
+      overlay.classList.add("visible");
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // FILTERS UI
+    // ══════════════════════════════════════════════════════════════
+    function buildFiltersUI() {
+      const section = document.getElementById("filters-section");
+      const container = document.getElementById("filters-container");
+      container.innerHTML = "";
+      state.selections = {};
+
+      if (!state.dfGeo) { section.style.display = "none"; return; }
+
+      const filters = availableFilters(state.dfGeo);
+      if (!Object.keys(filters).length) { section.style.display = "none"; return; }
+
+      section.style.display = "block";
+
+      for (const [col, label] of Object.entries(filters)) {
+        const vals = uniqueValues(state.dfGeo, col);
+        state.selections[col] = [...vals]; // all selected by default
+
+        const block = document.createElement("div");
+        block.className = "filter-block";
+        block.innerHTML = `<div class="filter-label">${label}</div>`;
+
+        const ms = createMultiSelect(vals, vals, (selected) => {
+          state.selections[col] = selected;
+          renderMap();
+        });
+        block.appendChild(ms);
+        container.appendChild(block);
+      }
+    }
+
+    function createMultiSelect(options, defaultSelected, onChange) {
+      let selected = [...defaultSelected];
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "ms-wrapper";
+
+      const display = document.createElement("div");
+      display.className = "ms-display";
+
+      const dropdown = document.createElement("div");
+      dropdown.className = "ms-dropdown";
+
+      const selectAll = document.createElement("div");
+      selectAll.className = "ms-select-all";
+      selectAll.innerHTML = `<span data-action="all">Todos</span><span data-action="none">Ninguno</span>`;
+      dropdown.appendChild(selectAll);
+
+      const checkboxes = {};
+
+      options.forEach(opt => {
+        const item = document.createElement("label");
+        item.className = "ms-option";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = opt;
+        cb.checked = selected.includes(opt);
+        checkboxes[opt] = cb;
+        item.appendChild(cb);
+        item.appendChild(document.createTextNode(opt || "(vacío)"));
+        cb.addEventListener("change", () => {
+          if (cb.checked) { if (!selected.includes(opt)) selected.push(opt); }
+          else selected = selected.filter(v => v !== opt);
+          updateDisplay();
+          onChange(selected);
+        });
+        dropdown.appendChild(item);
+      });
+
+      selectAll.addEventListener("click", e => {
+        const action = e.target.dataset.action;
+        if (!action) return;
+        selected = action === "all" ? [...options] : [];
+        options.forEach(o => { checkboxes[o].checked = action === "all"; });
+        updateDisplay();
+        onChange(selected);
+      });
+
+      function updateDisplay() {
+        display.innerHTML = "";
+        if (selected.length === options.length) {
+          display.innerHTML = `<span class="ms-placeholder">Todos (${options.length})</span>`;
+        } else if (selected.length === 0) {
+          display.innerHTML = `<span class="ms-placeholder" style="color:var(--c-error)">Ninguno</span>`;
+        } else {
+          selected.slice(0, 3).forEach(v => {
+            const pill = document.createElement("span");
+            pill.className = "ms-pill";
+            pill.textContent = v;
+            display.appendChild(pill);
+          });
+          if (selected.length > 3) {
+            const more = document.createElement("span");
+            more.className = "ms-placeholder";
+            more.textContent = `+${selected.length - 3}`;
+            display.appendChild(more);
+          }
+        }
+        // keep arrow
+        display.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239FA1A3' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`;
+        display.style.backgroundRepeat = "no-repeat";
+        display.style.backgroundPosition = "right 8px center";
+      }
+
+      display.addEventListener("click", e => {
+        e.stopPropagation();
+        dropdown.classList.toggle("open");
+        display.classList.toggle("open");
+      });
+
+      document.addEventListener("click", () => {
+        dropdown.classList.remove("open");
+        display.classList.remove("open");
+      });
+
+      updateDisplay();
+
+      wrapper.appendChild(display);
+      wrapper.appendChild(dropdown);
+      return wrapper;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // COLOR COL SELECTOR
+    // ══════════════════════════════════════════════════════════════
+    function buildColorSelector() {
+      const section = document.getElementById("color-section");
+      const sel = document.getElementById("color-col-select");
+      sel.innerHTML = "";
+
+      if (!state.dfGeo) { section.style.display = "none"; return; }
+
+      const cols = colorableColumns(state.dfGeo);
+      if (!cols.length) { section.style.display = "none"; return; }
+
+      section.style.display = "block";
+      cols.forEach(col => {
+        const opt = document.createElement("option");
+        opt.value = col;
+        opt.textContent = humanize(col);
+        if (col === "rubro" || col === cols[0]) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      state.colorCol = sel.value;
+
+      sel.addEventListener("change", () => {
+        state.colorCol = sel.value;
+        // Si el panel de personalización estaba abierto, reconstruirlo para la nueva columna
+        const panel = document.getElementById("color-customizer-panel");
+        if (panel.classList.contains("open")) buildCustomizerPanel();
+        renderMap();
+      });
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // LOAD MAIN CSV
+    // ══════════════════════════════════════════════════════════════
+    function loadMainCSV(file) {
+      Papa.parse(file, {
+        header: true, skipEmptyLines: true, dynamicTyping: false,
+        complete(res) {
+          const rows = normalizeHeaders(res.data);
+          const reqCols = ["latitude", "longitude", "validation_status"];
+          const missing = reqCols.filter(c => !rows[0] || !(c in rows[0]));
+          if (missing.length) {
+            showToast(`Faltan columnas: ${missing.join(", ")}`);
+            return;
+          }
+          state.dfMain = rows;
+          document.getElementById("main-name").textContent = file.name;
+          rebuildMerge();
+        },
+        error(e) { showToast("Error al leer el CSV: " + e.message); }
+      });
+    }
+
+    function rebuildMerge() {
+      if (!state.dfMain) return;
+
+      // reset engine to keep colors consistent
+      state.engine = new ColorEngine();
+
+      state.dfMerged = mergeComplements(state.dfMain, state.complements);
+      state.dfGeo = state.dfMerged.filter(r => {
+        const lat = parseFloat(r.latitude);
+        const lon = parseFloat(r.longitude);
+        return !isNaN(lat) && !isNaN(lon);
+      });
+
+      document.getElementById("empty-state").style.display = "none";
+      document.getElementById("download-section").style.display = "block";
+
+      buildColorSelector();
+      buildFiltersUI();
+      renderMap();
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // COMPLEMENTS UI
+    // ══════════════════════════════════════════════════════════════
+    function addComplementFile(file) {
+      Papa.parse(file, {
+        header: true, skipEmptyLines: true, dynamicTyping: false,
+        complete(res) {
+          const rows = normalizeHeaders(res.data);
+          const idx = state.complements.length;
+          state.complements.push(rows);
+          renderComplementList(file.name, idx);
+          rebuildMerge();
+        },
+        error(e) { showToast("Error al leer complementario: " + e.message); }
+      });
+    }
+
+    function renderComplementList(name, idx) {
+      const list = document.getElementById("complement-list");
+      const item = document.createElement("div");
+      item.className = "complement-item";
+      item.dataset.idx = idx;
+      item.innerHTML = `<span title="${name}">${name}</span><button title="Quitar">✕</button>`;
+      item.querySelector("button").addEventListener("click", () => {
+        state.complements.splice(idx, 1);
+        item.remove();
+        rebuildMerge();
+      });
+      list.appendChild(item);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // DOWNLOAD
+    // ══════════════════════════════════════════════════════════════
+    document.getElementById("btn-download").addEventListener("click", () => {
+      if (!state.dfGeo) return;
+      const filtered = applyFilters(state.dfGeo, state.selections);
+      const csv = Papa.unparse(filtered);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+      a.href = url; a.download = `visor_filtrado_${ts}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // TOAST
+    // ══════════════════════════════════════════════════════════════
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // EVENTS
+    // ══════════════════════════════════════════════════════════════
+    document.getElementById("input-main").addEventListener("change", e => {
+      if (e.target.files[0]) loadMainCSV(e.target.files[0]);
+    });
+
+    document.getElementById("input-complement").addEventListener("change", e => {
+      Array.from(e.target.files).forEach(f => addComplementFile(f));
+      e.target.value = "";
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════════════════════
+    initMap();
+  </script>
+</body>
+
+</html>
