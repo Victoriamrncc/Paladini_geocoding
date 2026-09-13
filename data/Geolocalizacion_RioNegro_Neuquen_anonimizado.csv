@@ -1,0 +1,135 @@
+id_cliente,original_address,latitude,longitude,reverse_geocoded_address,distance_meters,validation_status,timestamp,error_message,sucursal_asignada
+25613,"Neuquen, Argentina",-38.904076,-70.046123,"Neuquén, Argentina",4.3,SUCCESS,2026-05-16 10:20:54,,Paladini S.A. - Sucursal Neuquén
+94829,"Neuquen, Argentina",-38.917426,-69.259728,"Neuquén, Argentina",19.83,SUCCESS,2026-05-16 10:22:08,,Paladini S.A. - Sucursal Neuquén
+39266,"Neuquen, Argentina",-39.918495,-71.064304,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 10:23:45,,Paladini S.A. - Sucursal Neuquén
+65130,"Rio Negro, Argentina",-40.807625,-63.006408,"Río Negro, Argentina",30.34,FAILED,2026-05-16 10:24:21,Error mínimo — distancia geográfica (30.3m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Bahía Blanca
+74343,"Rio Negro, Argentina",-39.030055,-67.556812,"Río Negro, Argentina",50.83,FAILED,2026-05-16 10:41:44,Error medio — distancia geográfica (50.8m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+41448,"Rio Negro, Argentina",-40.833061,-63.023915,"Río Negro, Argentina",6.27,SUCCESS,2026-05-16 10:50:05,,Paladini S.A. - Sucursal Bahía Blanca
+47649,"Rio Negro, Argentina",-39.029005,-67.583615,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 10:50:13,,Paladini S.A. - Sucursal Neuquén
+99807,"Rio Negro, Argentina",-38.995261,-64.106651,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 10:57:45,,Paladini S.A. - Sucursal Bahía Blanca
+62064,"Rio Negro, Argentina",-38.833583,-68.050101,"Río Negro, Argentina",8.59,SUCCESS,2026-05-16 10:59:41,,Paladini S.A. - Sucursal Neuquén
+56745,"Rio Negro, Argentina",-39.015505,-67.563064,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 10:59:56,,Paladini S.A. - Sucursal Neuquén
+77316,"Rio Negro, Argentina",-39.023816,-67.560806,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:00:04,,Paladini S.A. - Sucursal Neuquén
+21752,"Rio Negro, Argentina",-39.025173,-67.567,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:00:11,,Paladini S.A. - Sucursal Neuquén
+69958,"Rio Negro, Argentina",-39.109124,-67.080501,"Río Negro, Argentina",12.03,SUCCESS,2026-05-16 11:00:18,,Paladini S.A. - Sucursal Neuquén
+85684,"Rio Negro, Argentina",-39.106315,-67.07166,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:00:26,,Paladini S.A. - Sucursal Neuquén
+58345,"Rio Negro, Argentina",-38.931378,-67.98669,"Río Negro, Argentina",16.33,SUCCESS,2026-05-16 11:00:33,,Paladini S.A. - Sucursal Neuquén
+62268,"Rio Negro, Argentina",-39.276339,-65.658451,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:00:41,,Paladini S.A. - Sucursal Neuquén
+25263,"Neuquen, Argentina",-38.827798,-68.127267,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:01:03,,Paladini S.A. - Sucursal Neuquén
+88664,"Neuquen, Argentina",-38.813414,-68.134332,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:01:10,,Paladini S.A. - Sucursal Neuquén
+78767,"Rio Negro, Argentina",-39.08013,-67.235218,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:01:40,,Paladini S.A. - Sucursal Neuquén
+72808,"Rio Negro, Argentina",-40.814177,-63.001764,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:02:01,,Paladini S.A. - Sucursal Bahía Blanca
+85434,"Rio Negro, Argentina",-38.990204,-67.838111,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:02:15,,Paladini S.A. - Sucursal Neuquén
+16407,"Rio Negro, Argentina",-38.964406,-67.830391,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:02:22,,Paladini S.A. - Sucursal Neuquén
+97881,"Rio Negro, Argentina",-38.971794,-67.91641,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:02:30,,Paladini S.A. - Sucursal Neuquén
+71609,"Rio Negro, Argentina",-38.966944,-67.911639,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:02:38,,Paladini S.A. - Sucursal Neuquén
+25992,"Rio Negro, Argentina",-38.816725,-68.068739,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:02:45,,Paladini S.A. - Sucursal Neuquén
+71525,"Neuquen, Argentina",-38.820623,-68.120858,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:04:17,,Paladini S.A. - Sucursal Neuquén
+81517,"Neuquen, Argentina",-38.83743,-68.128432,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:04:24,,Paladini S.A. - Sucursal Neuquén
+50321,"Rio Negro, Argentina",-39.161903,-66.138524,"Río Negro, Argentina",52.52,FAILED,2026-05-16 11:04:38,Error medio — distancia geográfica (52.5m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+72769,"Neuquen, Argentina",-38.946743,-68.253881,"Neuquén, Argentina",13.35,SUCCESS,2026-05-16 11:04:46,,Paladini S.A. - Sucursal Neuquén
+36546,"Rio Negro, Argentina",-39.300905,-65.669141,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:04:53,,Paladini S.A. - Sucursal Neuquén
+14339,"Rio Negro, Argentina",-39.436008,-65.689291,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:05:01,,Paladini S.A. - Sucursal Neuquén
+70060,"Rio Negro, Argentina",-39.300787,-65.742977,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:05:08,,Paladini S.A. - Sucursal Neuquén
+57177,"Rio Negro, Argentina",-37.865878,-67.808847,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:05:24,,Paladini S.A. - Sucursal Neuquén
+73644,"Rio Negro, Argentina",-38.97595,-67.82865,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:05:39,,Paladini S.A. - Sucursal Neuquén
+75163,"Neuquen, Argentina",-38.891734,-70.058861,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:05:46,,Paladini S.A. - Sucursal Neuquén
+14406,"Neuquen, Argentina",-38.921637,-69.254464,"Neuquén, Argentina",15.79,SUCCESS,2026-05-16 11:06:33,,Paladini S.A. - Sucursal Neuquén
+22894,"Rio Negro, Argentina",-38.831549,-68.058071,"Río Negro, Argentina",13.29,SUCCESS,2026-05-16 11:06:49,,Paladini S.A. - Sucursal Neuquén
+77524,"Neuquen, Argentina",-38.083493,-70.597106,"Neuquén, Argentina",48.95,FAILED,2026-05-16 11:07:01,Error mínimo — distancia geográfica (49.0m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+33992,"Neuquen, Argentina",-40.138387,-71.334709,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:07:09,,Paladini S.A. - Sucursal Neuquén
+72802,"Rio Negro, Argentina",-40.792145,-63.001764,"Río Negro, Argentina",38.21,FAILED,2026-05-16 11:07:17,Error mínimo — distancia geográfica (38.2m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Bahía Blanca
+75329,"Rio Negro, Argentina",-38.934306,-68.011254,"Río Negro, Argentina",11.29,SUCCESS,2026-05-16 11:07:25,,Paladini S.A. - Sucursal Neuquén
+63911,"Neuquen, Argentina",-40.163875,-71.305807,"Neuquén, Argentina",20.42,SUCCESS,2026-05-16 11:07:33,,Paladini S.A. - Sucursal Neuquén
+22080,"Neuquen, Argentina",-40.176853,-71.347234,"Neuquén, Argentina",6.06,SUCCESS,2026-05-16 11:07:41,,Paladini S.A. - Sucursal Neuquén
+20887,"Neuquen, Argentina",-38.93335,-69.241507,"Neuquén, Argentina",72.98,FAILED,2026-05-16 11:08:12,Error medio — distancia geográfica (73.0m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+25835,"Neuquen, Argentina",-38.519046,-70.353933,"Neuquén, Argentina",39.57,FAILED,2026-05-16 11:08:27,Error mínimo — distancia geográfica (39.6m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+45197,"Neuquen, Argentina",-37.370346,-70.267491,"Neuquén, Argentina",15.73,SUCCESS,2026-05-16 11:08:41,,Paladini S.A. - Sucursal Neuquén
+30284,"Neuquen, Argentina",-37.398362,-70.262654,"Neuquén, Argentina",44.84,FAILED,2026-05-16 11:08:49,Error mínimo — distancia geográfica (44.8m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+85272,"Neuquen, Argentina",-39.939408,-71.053355,"Neuquén, Argentina",30.01,FAILED,2026-05-16 11:08:56,Error mínimo — distancia geográfica (30.0m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+74485,"Neuquen, Argentina",-38.884282,-70.048913,"Neuquén, Argentina",8.56,SUCCESS,2026-05-16 11:19:26,,Paladini S.A. - Sucursal Neuquén
+81539,"Neuquen, Argentina",-38.941615,-69.209544,"Neuquén, Argentina",19.44,SUCCESS,2026-05-16 11:21:04,,Paladini S.A. - Sucursal Neuquén
+88398,"Neuquen, Argentina",-40.14267,-71.356533,"Neuquén, Argentina",12.73,SUCCESS,2026-05-16 11:22:38,,Paladini S.A. - Sucursal Neuquén
+21066,"Neuquen, Argentina",-39.955135,-71.082665,"Neuquén, Argentina",26.84,SUCCESS,2026-05-16 11:25:01,,Paladini S.A. - Sucursal Neuquén
+27740,"Neuquen, Argentina",-38.936637,-68.208898,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:27:20,,Paladini S.A. - Sucursal Neuquén
+50108,"Neuquen, Argentina",-38.82678,-68.14885,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:30:48,,Paladini S.A. - Sucursal Neuquén
+29468,"Neuquen, Argentina",-38.93384,-69.245096,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:31:35,,Paladini S.A. - Sucursal Neuquén
+11852,"Rio Negro, Argentina",-38.917107,-68.000469,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:31:44,,Paladini S.A. - Sucursal Neuquén
+19625,"Neuquen, Argentina",-38.96714,-69.220272,"Neuquén, Argentina",11.22,SUCCESS,2026-05-16 11:32:04,,Paladini S.A. - Sucursal Neuquén
+56321,"Rio Negro, Argentina",-38.936219,-67.899103,"Río Negro, Argentina",8.27,SUCCESS,2026-05-16 11:33:43,,Paladini S.A. - Sucursal Neuquén
+13353,"Rio Negro, Argentina",-38.943063,-68.004561,"Río Negro, Argentina",0.0,SUCCESS,2026-05-16 11:37:03,,Paladini S.A. - Sucursal Neuquén
+49802,"Neuquen, Argentina",-38.905157,-70.048343,"Neuquén, Argentina",10.0,SUCCESS,2026-05-16 11:37:13,,Paladini S.A. - Sucursal Neuquén
+75217,"Rio Negro, Argentina",-39.928575,-69.975865,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:41:55,,Paladini S.A. - Sucursal Neuquén
+32378,"Neuquen, Argentina",-40.140696,-71.223357,"Neuquén, Argentina",13.93,SUCCESS,2026-05-16 11:42:05,,Paladini S.A. - Sucursal Neuquén
+66833,"Neuquen, Argentina",-38.90202,-70.068416,"Neuquén, Argentina",19.39,SUCCESS,2026-05-16 11:42:16,,Paladini S.A. - Sucursal Neuquén
+40582,"Neuquen, Argentina",-37.370596,-70.289393,"Neuquén, Argentina",0.0,SUCCESS,2026-05-16 11:42:26,,Paladini S.A. - Sucursal Neuquén
+62318,"Neuquen, Argentina",-38.960523,-68.100276,"Neuquén, Argentina",11.02,SUCCESS,2026-05-16 12:35:30,,Paladini S.A. - Sucursal Neuquén
+32723,"Rio Negro, Argentina",-40.746724,-64.936394,"Río Negro, Argentina",21.07,SUCCESS,2026-05-17 10:01:46,,Paladini S.A. - Sucursal Bahía Blanca
+16316,"Rio Negro, Argentina",-39.097216,-67.081085,"Río Negro, Argentina",11.15,SUCCESS,2026-05-17 10:16:42,,Paladini S.A. - Sucursal Neuquén
+34710,"Neuquen, Argentina",-37.382474,-70.261324,"Neuquén, Argentina",33.6,FAILED,2026-05-17 10:22:04,Error mínimo — distancia geográfica (33.6m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+12683,"Rio Negro, Argentina",-39.057436,-67.579051,"Río Negro, Argentina",6.54,SUCCESS,2026-05-17 10:31:35,,Paladini S.A. - Sucursal Neuquén
+77744,"Rio Negro, Argentina",-39.026153,-67.59676,"Río Negro, Argentina",18.5,SUCCESS,2026-05-17 10:35:53,,Paladini S.A. - Sucursal Neuquén
+96667,"Rio Negro, Argentina",-40.779598,-65.079587,"Río Negro, Argentina",0.0,SUCCESS,2026-05-17 10:51:32,,Paladini S.A. - Sucursal Neuquén
+65752,"Rio Negro, Argentina",-38.946247,-68.214128,"Neuquén, Argentina",4.47,SUCCESS,2026-05-17 10:55:34,,Paladini S.A. - Sucursal Neuquén
+60224,"Neuquen, Argentina",-38.951519,-69.230673,"Neuquén, Argentina",2.82,SUCCESS,2026-05-17 10:55:42,,Paladini S.A. - Sucursal Neuquén
+44530,"Rio Negro, Argentina",-40.809655,-63.001764,"Río Negro, Argentina",0.0,SUCCESS,2026-05-17 11:11:20,,Paladini S.A. - Sucursal Bahía Blanca
+64491,"Rio Negro, Argentina",-40.81421,-65.098686,"Río Negro, Argentina",0.0,SUCCESS,2026-05-17 11:11:29,,Paladini S.A. - Sucursal Neuquén
+78070,"Rio Negro, Argentina",-39.030224,-67.591128,"Río Negro, Argentina",24.48,SUCCESS,2026-05-17 11:20:00,,Paladini S.A. - Sucursal Neuquén
+78773,"Rio Negro, Argentina",-38.987569,-64.07383,"Río Negro, Argentina",15.8,SUCCESS,2026-05-17 11:46:43,,Paladini S.A. - Sucursal Bahía Blanca
+38092,"Rio Negro, Argentina",-39.010728,-64.069506,"Río Negro, Argentina",0.0,SUCCESS,2026-05-17 11:48:18,,Paladini S.A. - Sucursal Bahía Blanca
+69521,"Rio Negro, Argentina",-40.80035,-65.093549,"Río Negro, Argentina",0.0,SUCCESS,2026-05-17 12:02:28,,Paladini S.A. - Sucursal Neuquén
+97870,"Rio Negro, Argentina",-37.892631,-67.80677,"Río Negro, Argentina",2.68,SUCCESS,2026-05-17 21:07:28,,Paladini S.A. - Sucursal Neuquén
+30546,"Rio Negro, Argentina",-39.052461,-67.572067,"Río Negro, Argentina",61.72,FAILED,2026-05-17 22:37:43,Error medio — distancia geográfica (61.7m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+80566,"Neuquen, Argentina",-38.839675,-68.128988,"Neuquén, Argentina",15.68,SUCCESS,2026-05-18 08:04:18,,Paladini S.A. - Sucursal Neuquén
+46762,"Rio Negro, Argentina",-40.102279,-64.452608,"Río Negro, Argentina",0.0,SUCCESS,2026-05-18 08:10:34,,Paladini S.A. - Sucursal Bahía Blanca
+38106,"Rio Negro, Argentina",-38.988939,-64.1001,"Río Negro, Argentina",9.09,SUCCESS,2026-05-18 08:22:51,,Paladini S.A. - Sucursal Bahía Blanca
+97858,"Rio Negro, Argentina",-39.290556,-65.673291,"Río Negro, Argentina",0.0,SUCCESS,2026-05-18 08:41:38,,Paladini S.A. - Sucursal Neuquén
+44565,"Neuquen, Argentina",-38.920907,-70.06694,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 08:41:53,,Paladini S.A. - Sucursal Neuquén
+23898,"Rio Negro, Argentina",-39.090585,-67.06921,"Río Negro, Argentina",0.0,SUCCESS,2026-05-18 08:44:35,,Paladini S.A. - Sucursal Neuquén
+34313,"Rio Negro, Argentina",-40.801665,-65.103089,"Río Negro, Argentina",26.38,SUCCESS,2026-05-18 08:49:29,,Paladini S.A. - Sucursal Neuquén
+51097,"Rio Negro, Argentina",-41.606102,-65.342931,"Río Negro, Argentina",0.0,SUCCESS,2026-05-18 08:49:36,,Paladini S.A. - Sucursal Neuquén
+48146,"Neuquen, Argentina",-38.91792,-68.248008,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 09:03:22,,Paladini S.A. - Sucursal Neuquén
+43570,"Neuquen, Argentina",-38.974426,-68.070312,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 09:06:38,,Paladini S.A. - Sucursal Neuquén
+43691,"Neuquen, Argentina",-38.899902,-70.08268,"Neuquén, Argentina",74.01,FAILED,2026-05-18 09:07:01,Error medio — distancia geográfica (74.0m) supera el umbral permitido (30m).,Paladini S.A. - Sucursal Neuquén
+22641,"Neuquen, Argentina",-37.388425,-70.279583,"Neuquén, Argentina",19.15,SUCCESS,2026-05-18 09:10:57,,Paladini S.A. - Sucursal Neuquén
+22303,"Neuquen, Argentina",-38.936863,-68.222013,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 09:16:07,,Paladini S.A. - Sucursal Neuquén
+55915,"Rio Negro, Argentina",-38.915293,-68.00937,"Río Negro, Argentina",0.0,SUCCESS,2026-05-18 09:18:18,,Paladini S.A. - Sucursal Neuquén
+92015,"Rio Negro, Argentina",-37.876518,-67.794013,"Río Negro, Argentina",11.38,SUCCESS,2026-05-18 09:19:48,,Paladini S.A. - Sucursal Neuquén
+62978,"Rio Negro, Argentina",-39.004566,-64.103464,"Río Negro, Argentina",5.53,SUCCESS,2026-05-18 09:34:13,,Paladini S.A. - Sucursal Bahía Blanca
+70643,"Rio Negro, Argentina",-38.952,-67.984907,"Río Negro, Argentina",0.0,SUCCESS,2026-05-18 09:34:50,,Paladini S.A. - Sucursal Neuquén
+25655,"Neuquen, Argentina",-37.367982,-70.25957,"Neuquén, Argentina",10.02,SUCCESS,2026-05-18 10:12:54,,Paladini S.A. - Sucursal Neuquén
+99312,"Neuquen, Argentina",-38.936839,-68.228156,"Neuquén, Argentina",11.89,SUCCESS,2026-05-18 10:17:24,,Paladini S.A. - Sucursal Neuquén
+48257,"Neuquen, Argentina",-38.917079,-68.246177,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 10:22:45,,Paladini S.A. - Sucursal Neuquén
+67244,"Neuquen, Argentina",-37.363097,-70.281627,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 10:26:20,,Paladini S.A. - Sucursal Neuquén
+53325,"Neuquen, Argentina",-37.363247,-70.246973,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 10:26:27,,Paladini S.A. - Sucursal Neuquén
+26032,"Neuquen, Argentina",-38.835874,-68.147628,"Neuquén, Argentina",19.14,SUCCESS,2026-05-18 10:26:41,,Paladini S.A. - Sucursal Neuquén
+86756,"Neuquen, Argentina",-38.909832,-68.053196,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 10:31:07,,Paladini S.A. - Sucursal Neuquén
+54890,"Neuquen, Argentina",-38.970225,-68.250935,"Neuquén, Argentina",0.0,SUCCESS,2026-05-18 10:44:45,,Paladini S.A. - Sucursal Neuquén
+24758,"Neuquen, Argentina",-37.394178,-70.285624,"Neuquén, Argentina",18.71,SUCCESS,2026-05-18 10:44:52,,Paladini S.A. - Sucursal Neuquén
+14891,"Rio Negro, Argentina",-41.150663,-71.316922,"Río Negro, Argentina",2.46,SUCCESS,2026-05-18 10:51:27,,Paladini S.A. - Sucursal Neuquén
+94920,"Neuquen, Argentina",-38.80882,-68.152204,"Neuquén, Argentina",19.14,SUCCESS,2026-05-18 10:51:34,,Paladini S.A. - Sucursal Neuquén
+65675,"Neuquen, Argentina",-38.824627,-68.150054,"Neuquén, Argentina",19.14,SUCCESS,2026-05-18 10:52:56,,Paladini S.A. - Sucursal Neuquén
+60345,"Rio Negro, Argentina",-41.606102,-65.345363,"Río Negro, Argentina",0.0,SUCCESS,2026-05-18 11:04:16,,Paladini S.A. - Sucursal Neuquén
+96847,"Neuquen, Argentina",-38.946718,-69.256068,"Neuquén, Argentina",15.45,SUCCESS,2026-05-18 11:11:58,,Paladini S.A. - Sucursal Neuquén
+81162,"Neuquen, Argentina",-38.957027,-69.216932,"Neuquén, Argentina",23.97,SUCCESS,2026-05-18 11:12:05,,Paladini S.A. - Sucursal Neuquén
+74039,"Río Negro/Neuquén, Argentina",-39.304757,-66.720572,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+76589,"Río Negro/Neuquén, Argentina",-37.826099,-64.784671,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Bahía Blanca
+80642,"Río Negro/Neuquén, Argentina",-40.635724,-71.218065,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+32671,"Río Negro/Neuquén, Argentina",-39.305526,-67.865354,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+44736,"Río Negro/Neuquén, Argentina",-37.531346,-70.198245,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+89956,"Río Negro/Neuquén, Argentina",-38.941499,-70.609398,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+68254,"Río Negro/Neuquén, Argentina",-40.843839,-71.03916,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+46295,"Río Negro/Neuquén, Argentina",-37.923963,-64.474039,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Bahía Blanca
+19585,"Río Negro/Neuquén, Argentina",-38.120639,-68.510079,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+77147,"Río Negro/Neuquén, Argentina",-39.393531,-65.148219,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Bahía Blanca
+55030,"Río Negro/Neuquén, Argentina",-41.366943,-64.333108,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Bahía Blanca
+15829,"Río Negro/Neuquén, Argentina",-38.936905,-69.328084,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+14812,"Río Negro/Neuquén, Argentina",-41.358265,-69.503269,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+38818,"Río Negro/Neuquén, Argentina",-39.443818,-70.096403,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+94601,"Río Negro/Neuquén, Argentina",-38.438084,-64.073477,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Bahía Blanca
+50919,"Río Negro/Neuquén, Argentina",-38.599306,-68.349512,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+70747,"Río Negro/Neuquén, Argentina",-38.2469,-66.664659,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+78393,"Río Negro/Neuquén, Argentina",-40.433762,-64.161324,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Bahía Blanca
+90640,"Río Negro/Neuquén, Argentina",-40.013037,-67.51956,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén
+53779,"Río Negro/Neuquén, Argentina",-39.660888,-64.577196,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Bahía Blanca
+71094,"Río Negro/Neuquén, Argentina",-37.792615,-65.730465,"Río Negro/Neuquén, Argentina",,SUCCESS,,,Paladini S.A. - Sucursal Neuquén

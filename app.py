@@ -4,8 +4,6 @@ import threading
 import pandas as pd
 import streamlit as st
 from datetime import datetime
-import folium
-from streamlit_folium import st_folium
 
 from geocoding.processor import GeocodingProcessor
 from geocoding.config import LOGS_DIR, RESULTADOS_DIR

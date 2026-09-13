@@ -454,7 +454,8 @@
     }
 
     /* map */
-    #map {
+    #map,
+    #map-logistica {
       flex: 1;
       z-index: 1;
     }
@@ -766,20 +767,634 @@
     .cc-palette-dot.selected {
       border-color: var(--c-text);
     }
+
+    /* ── Tabs (header) ──────────────────────────────────────── */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      margin-left: 16px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--c-muted);
+      padding: 7px 14px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+
+    .tab-btn:hover {
+      background: var(--c-bg);
+      color: var(--c-text);
+    }
+
+    .tab-btn.active {
+      background: var(--c-text);
+      color: #fff;
+    }
+
+    .app-view {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .app-view.active {
+      display: flex;
+    }
+
+    /* ── Logística: KPI cards (estilo "boxed": borde + sombra) ─── */
+    .kpi-log-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+      background: var(--c-bg);
+      border-bottom: 1px solid var(--c-border);
+      flex-shrink: 0;
+    }
+
+    .kpi-card {
+      flex: 1;
+      min-width: 120px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-sm);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .kpi-card-label {
+      font-size: 10.5px;
+      color: var(--c-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .kpi-card-value {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--c-text);
+    }
+
+    .kpi-card-value.ok {
+      color: var(--c-success);
+    }
+
+    .kpi-card-value.warn {
+      color: var(--c-warning);
+    }
+
+    .kpi-card-value.partial {
+      color: var(--c-warning);
+    }
+
+    /* ── Logística: toggle Mapa / Tabla ─────────────────────── */
+    .log-view-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      padding: 3px;
+      margin: 12px 16px 0;
+      width: fit-content;
+      flex-shrink: 0;
+    }
+
+    .log-view-btn {
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--c-muted);
+      padding: 6px 14px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+
+    .log-view-btn.active {
+      background: var(--c-surface);
+      color: var(--c-text);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .log-view-btn:hover:not(.active) {
+      color: var(--c-text);
+    }
+
+    .log-view-btn:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    .log-view-btn:disabled:hover {
+      color: var(--c-muted);
+    }
+
+    /* ── Logística: vista de tabla ──────────────────────────── */
+    .log-table-view {
+      display: none;
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+      background: var(--c-bg);
+    }
+
+    .log-table-view.visible {
+      display: block;
+    }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--c-surface);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      font-size: 12.5px;
+    }
+
+    .log-table th {
+      text-align: left;
+      background: var(--c-bg);
+      color: var(--c-muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--c-border);
+      position: sticky;
+      top: 0;
+    }
+
+    .log-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--c-border);
+      color: var(--c-text);
+    }
+
+    .log-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .log-table tr:hover td {
+      background: var(--c-bg);
+    }
+
+    .log-estado-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    .log-estado-badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Logística: warning banner ──────────────────────────── */
+    .log-warning-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: #fff6e6;
+      border-bottom: 1px solid #f0d896;
+      color: #8a5a00;
+      font-size: 11.5px;
+      padding: 7px 16px;
+      flex-shrink: 0;
+    }
+
+    .log-warning-banner.visible {
+      display: flex;
+    }
+
+    /* ── Logística: última actualización + botón ────────────── */
+    .log-update-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .log-update-ts {
+      font-size: 10.5px;
+      color: var(--c-muted);
+    }
+
+    .btn-update {
+      width: 100%;
+      background: var(--c-bg);
+      color: var(--c-text);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      padding: 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+
+    .btn-update:hover {
+      border-color: var(--c-accent);
+    }
+
+    .btn-update:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    /* ── Logística: bloque de estado de datos (carga automática) ─ */
+    .log-datos-status {
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      padding: 12px;
+    }
+
+    .log-datos-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--c-text);
+    }
+
+    .log-datos-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--c-accent);
+      flex-shrink: 0;
+    }
+
+    .log-datos-dot.ok {
+      background: var(--c-success);
+    }
+
+    .log-datos-dot.error {
+      background: var(--c-error);
+    }
+
+    .log-datos-dot.warning {
+      background: var(--c-warning);
+    }
+
+    /* ── Modal de selección de sucursal ─────────────────────────── */
+    .sucursal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 28, 30, .55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .sucursal-overlay.hidden {
+      display: none;
+    }
+
+    .sucursal-modal {
+      background: var(--c-surface);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-md);
+      padding: 28px;
+      width: 380px;
+      max-width: 90vw;
+    }
+
+    .sucursal-modal h2 {
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+
+    .sucursal-modal-hint {
+      font-size: 12.5px;
+      color: var(--c-muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .sucursal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .sucursal-option {
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      background: var(--c-bg);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-text);
+    }
+
+    .sucursal-option:hover {
+      border-color: var(--c-accent);
+    }
+
+    .sucursal-option .so-sub {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--c-muted);
+      margin-top: 2px;
+    }
+
+    .sucursal-loading,
+    .sucursal-error {
+      font-size: 12.5px;
+      color: var(--c-muted);
+      padding: 8px 0;
+    }
+
+    /* ── Botón de Configuración (header) ────────────────────────── */
+    .btn-config {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--c-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color .15s, color .15s;
+    }
+
+    .btn-config:hover {
+      border-color: var(--c-accent);
+      color: var(--c-text);
+    }
+
+    /* ── Modal de configuración de archivos ─────────────────────── */
+    .config-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 28, 30, .55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+    }
+
+    .config-overlay.hidden {
+      display: none;
+    }
+
+    .config-modal {
+      background: var(--c-surface);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-md);
+      padding: 24px 26px;
+      width: 480px;
+      max-width: 92vw;
+      max-height: 86vh;
+      overflow-y: auto;
+    }
+
+    .config-modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .config-modal h2 {
+      font-size: 16px;
+    }
+
+    .config-close-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      line-height: 1;
+      color: var(--c-muted);
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+
+    .config-close-btn:hover {
+      color: var(--c-text);
+    }
+
+    .config-modal-hint {
+      font-size: 12.5px;
+      color: var(--c-muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .config-field {
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .config-field-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .config-field-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--c-muted);
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .config-field-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--c-border);
+      flex-shrink: 0;
+    }
+
+    .config-field-status .dot.ok {
+      background: var(--c-success);
+    }
+
+    .config-field-status .dot.error {
+      background: var(--c-error);
+    }
+
+    .config-field-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .config-field-row input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      padding: 7px 8px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    .config-field-row input[type="text"].error {
+      border-color: var(--c-error);
+    }
+
+    .config-field-row button {
+      border: 1px solid var(--c-border);
+      background: var(--c-bg);
+      border-radius: var(--r-sm);
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .config-field-row button:hover {
+      border-color: var(--c-accent);
+    }
+
+    .config-field-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .config-field-reset {
+      background: none;
+      border: none;
+      font-size: 11px;
+      color: var(--c-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .config-field-reset:disabled {
+      color: var(--c-border);
+      cursor: default;
+      text-decoration: none;
+    }
+
+    .config-field-error {
+      font-size: 11.5px;
+      color: var(--c-error);
+      margin-top: 6px;
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- ── Selección de sucursal (pantalla inicial) ──────────────── -->
+  <div class="sucursal-overlay" id="sucursal-overlay">
+    <div class="sucursal-modal">
+      <h2>¿En qué sucursal estás?</h2>
+      <p class="sucursal-modal-hint">Elegí tu sucursal para centrar el mapa. Los datos de clientes y
+        seguimiento se cargan automáticamente desde la carpeta local.</p>
+      <div class="sucursal-list" id="sucursal-list">
+        <div class="sucursal-loading">Cargando sucursales…</div>
+      </div>
+    </div>
+  </div>
 
   <!-- ── Header ──────────────────────────────────────────────── -->
   <header>
     <div class="logo-dot"></div>
     <h1>Visor de Direcciones</h1>
     <span class="subtitle">Visualización geográfica</span>
+    <nav class="tab-nav">
+      <button class="tab-btn active" id="tab-btn-visor" type="button">Visor de Direcciones</button>
+      <button class="tab-btn" id="tab-btn-logistica" type="button">Logística</button>
+    </nav>
+    <button class="btn-config" id="btn-abrir-config" type="button">⚙ Configuración</button>
   </header>
 
-  <!-- ── Body ────────────────────────────────────────────────── -->
-  <div class="app-body">
+  <!-- ── Configuración de ubicación de archivos (clientes / seguimiento) ── -->
+  <div class="config-overlay hidden" id="config-overlay">
+    <div class="config-modal">
+      <div class="config-modal-head">
+        <h2>Ubicación de los archivos de datos</h2>
+        <button class="config-close-btn" id="config-close-btn" type="button" aria-label="Cerrar">✕</button>
+      </div>
+      <p class="config-modal-hint">
+        Por defecto el visor busca estos archivos donde están configurados en
+        <code>app_visor.py</code>. Si en tu máquina están en otro lado, indicá acá la
+        ruta completa del archivo.
+      </p>
+
+      <div class="config-field" data-clave="clientes">
+        <div class="config-field-title">Clientes (geolocalización)</div>
+        <div class="config-field-status">
+          <span class="dot"></span>
+          <span class="config-field-status-text">Verificando…</span>
+        </div>
+        <div class="config-field-row">
+          <input type="text" placeholder="Ruta completa al CSV de clientes" />
+          <button type="button" data-accion="guardar">Guardar</button>
+        </div>
+        <div class="config-field-actions">
+          <button class="config-field-reset" type="button" data-accion="restablecer" disabled>
+            Restablecer a valor por defecto
+          </button>
+        </div>
+        <div class="config-field-error"></div>
+      </div>
+
+      <div class="config-field" data-clave="seguimiento">
+        <div class="config-field-title">Seguimiento (hoja de ruta)</div>
+        <div class="config-field-status">
+          <span class="dot"></span>
+          <span class="config-field-status-text">Verificando…</span>
+        </div>
+        <div class="config-field-row">
+          <input type="text" placeholder="Ruta completa al archivo de seguimiento" />
+          <button type="button" data-accion="guardar">Guardar</button>
+        </div>
+        <div class="config-field-actions">
+          <button class="config-field-reset" type="button" data-accion="restablecer" disabled>
+            Restablecer a valor por defecto
+          </button>
+        </div>
+        <div class="config-field-error"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Body: Visor de Direcciones ──────────────────────────── -->
+  <div class="app-body app-view active" id="view-visor">
 
     <!-- ── Sidebar ──────────────────────────────────────────── -->
     <aside>
@@ -833,7 +1448,7 @@
         <!-- Descarga -->
         <div id="download-section" style="display:none">
           <div class="section-label">Exportar</div>
-          <button class="btn-secondary" id="btn-download">⬇ Descargar filtrado (CSV)</button>
+          <button class="btn-secondary" id="btn-download">Descargar filtrado (CSV)</button>
         </div>
 
       </div>
@@ -887,6 +1502,160 @@
       <div class="empty-state" id="empty-state">
         <div class="es-icon">🗺️</div>
         <p>Subí un CSV de resultados para visualizar los puntos en el mapa.</p>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── Body: Logística ─────────────────────────────────────── -->
+  <div class="app-body app-view" id="view-logistica">
+
+    <!-- ── Sidebar ──────────────────────────────────────────── -->
+    <aside>
+      <div class="sidebar-scroll">
+
+        <!-- Estado de datos (carga automática, sin subida manual) -->
+        <div>
+          <div class="section-label">Datos</div>
+          <div class="log-datos-status">
+            <div class="log-datos-row">
+              <span class="log-datos-dot" id="log-datos-dot"></span>
+              <span id="log-datos-texto">Cargando datos…</span>
+            </div>
+            <div class="log-update-row" id="log-update-row" style="margin-top:10px;">
+              <button class="btn-update" id="log-btn-update" type="button">Actualizar ahora</button>
+              <div class="log-update-ts" id="log-update-ts">Sin actualizar todavía</div>
+            </div>
+          </div>
+          <!-- Elementos ocultos: el código de carga automática sigue usándolos
+               internamente para guardar el nombre de la fuente de cada dataset. -->
+          <div id="log-geo-name" style="display:none"></div>
+          <div id="log-seg-name" style="display:none"></div>
+          <div id="log-sucursales-name" style="display:none"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Filtros -->
+        <div id="log-filters-section" style="display:none">
+          <div class="section-label">Filtros</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="filter-block">
+              <div class="filter-label">Estado de entrega</div>
+              <div id="log-filter-estado"></div>
+            </div>
+            <div class="filter-block" id="log-filter-sucursal-block" style="display:none">
+              <div class="filter-label">Sucursal asignada</div>
+              <div id="log-filter-sucursal"></div>
+            </div>
+            <div class="filter-block" id="log-filter-hojaruta-block" style="display:none">
+              <div class="filter-label">Hoja de ruta</div>
+              <div id="log-filter-hojaruta"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Descarga -->
+        <div id="log-download-section" style="display:none">
+          <div class="section-label">Exportar</div>
+          <button class="btn-secondary" id="log-btn-download">Descargar filtrado (CSV)</button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── Main ─────────────────────────────────────────────── -->
+    <main>
+
+      <!-- Aviso de registros sin coincidencia -->
+      <div class="log-warning-banner" id="log-warning-banner">
+        <span id="log-warning-text"></span>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-log-bar" id="log-kpi-bar" style="display:none">
+        <div class="kpi-card">
+          <div class="kpi-card-label">Clientes totales</div>
+          <div class="kpi-card-value" id="log-kpi-clientes">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Entregado</div>
+          <div class="kpi-card-value ok" id="log-kpi-c-entregado">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Pendiente</div>
+          <div class="kpi-card-value warn" id="log-kpi-c-pendiente">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Parcial</div>
+          <div class="kpi-card-value partial" id="log-kpi-c-parcial">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Kg entregados</div>
+          <div class="kpi-card-value" id="log-kpi-kg">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">% Cumplimiento (kg)</div>
+          <div class="kpi-card-value" id="log-kpi-pct">—</div>
+        </div>
+      </div>
+      <div class="kpi-bar" id="log-kpi-placeholder">
+        <div class="kpi-placeholder">
+          <span class="kpi-placeholder-text">KPIs — subí los dos archivos</span>
+        </div>
+      </div>
+
+      <!-- Toggle Mapa / Tabla -->
+      <div class="log-view-toggle" id="log-view-toggle" style="display:none">
+        <button class="log-view-btn active" id="log-view-btn-mapa" type="button">Mapa</button>
+        <button class="log-view-btn" id="log-view-btn-tabla" type="button">Tabla</button>
+      </div>
+
+      <!-- Vista Mapa -->
+      <div id="log-map-view" style="display:flex;flex-direction:column;flex:1;position:relative;overflow:hidden;">
+        <div id="map-logistica"></div>
+
+        <!-- Leyenda -->
+        <div class="legend-overlay" id="log-legend-overlay">
+          <div class="legend-title">Estado de entrega</div>
+          <div id="log-legend-items"></div>
+        </div>
+
+        <!-- Estado vacío (sin datos cargados) -->
+        <div class="empty-state" id="log-empty-state">
+          <div class="es-icon"></div>
+          <p>Subí el CSV de geolocalización y el CSV de seguimiento para visualizar el avance de las entregas.</p>
+        </div>
+
+        <!-- Sin coincidencias (hay datos, pero los filtros elegidos no matchean nada) -->
+        <div class="empty-state" id="log-nomatch-state" style="display:none">
+          <div class="es-icon"></div>
+          <p>No hay coincidencias para el filtro elegido.<br>Probá destildar alguna opción en Estado, Sucursal asignada
+            o Hoja de ruta.</p>
+        </div>
+      </div>
+
+      <!-- Vista Tabla -->
+      <div class="log-table-view" id="log-table-view">
+        <table class="log-table" id="log-table">
+          <thead>
+            <tr>
+              <th>ID Cliente</th>
+              <th>Cliente</th>
+              <th>Estado</th>
+              <th>Facturas entregadas</th>
+              <th>Kg total</th>
+              <th>Localidad</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody"></tbody>
+        </table>
+        <div class="empty-state" id="log-table-empty-state" style="position:static;display:none;">
+          <div class="es-icon"></div>
+          <p>Subí el CSV de geolocalización y el CSV de seguimiento para ver el listado.</p>
+        </div>
       </div>
 
     </main>
@@ -1097,6 +1866,8 @@
       selections: {},
       markers: [],
       map: null,
+      sucursales: null,       // capa independiente de sucursales (igual que en Logística)
+      sucursalMarkers: [],
       // { col: { value: { enabled: bool, colorName: string } } }
       customColors: {},
     };
@@ -1266,11 +2037,12 @@
     // ══════════════════════════════════════════════════════════════
     // MAP
     // ══════════════════════════════════════════════════════════════
-    function initMap() {
-      state.map = L.map("map", { zoomControl: true }).setView([-34.6037, -58.3816], 10);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-        attribution: '© <a href="https://carto.com/">CARTO</a>',
-        subdomains: "abcd", maxZoom: 19,
+    function initMap(centro) {
+      const vista = centro ? [centro.latitude, centro.longitude] : [-34.6037, -58.3816];
+      state.map = L.map("map", { zoomControl: true }).setView(vista, centro ? 12 : 10);
+      L.tileLayer("https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png", {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, estilo <a href="https://maps.wikimedia.org">Wikimedia</a>',
+        maxZoom: 19,
       }).addTo(state.map);
     }
 
@@ -1680,9 +2452,1123 @@
     });
 
     // ══════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
+    // MÓDULO LOGÍSTICA (independiente del Visor de Direcciones)
+    // ══════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
+
+    const LOG_COLOR = {
+      entregado: "#22863a",
+      pendiente: "#c0392b",
+      parcial: "#e08000",
+      sin_seguimiento: "#9FA1A3",
+    };
+
+    const LOG_LABEL = {
+      entregado: "Entregado",
+      pendiente: "Pendiente / No entregado",
+      parcial: "Parcial",
+      sin_seguimiento: "Sin información de seguimiento",
+    };
+
+    const stateLog = {
+      geoRows: null,          // filas crudas del CSV de geolocalización (con coords válidas)
+      segRows: null,          // filas crudas del CSV de seguimiento
+      segByCliente: null,     // Map id_cliente -> { pedidos:[...], estado, kgTotal, kgEntregado }
+      merged: null,           // filas finales a graficar: { ...geoRow, estado, pedidos, kgTotal, kgEntregado }
+      selections: { estado: [], sucursal: [], hojaRuta: [] },
+      markers: [],
+      sucursales: null,       // filas de sucursales (capa independiente, no filtrable)
+      sucursalMarkers: [],
+      map: null,
+      mapInited: false,
+      lastUpdate: null,
+      unmatchedSeguimiento: 0, // ids en seguimiento sin geolocalización
+      ultimoTextoSeguimiento: null, // texto crudo del último /api/seguimiento recibido, para detectar "sin cambios"
+    };
+
+    // ── Parseo tolerante: detecta separador ; o , ────────────────
+    function logDetectDelimiter(sampleText) {
+      const firstLine = (sampleText.split(/\r?\n/)[0] || "");
+      const semi = (firstLine.match(/;/g) || []).length;
+      const comma = (firstLine.match(/,/g) || []).length;
+      return semi > comma ? ";" : ",";
+    }
+
+    function logNormalizeHeaders(rows) {
+      return rows.map(row => {
+        const n = {};
+        for (const [k, v] of Object.entries(row)) n[k.trim()] = typeof v === "string" ? v.trim() : v;
+        return n;
+      });
+    }
+
+    // Convierte "866,93" -> 866.93 (coma decimal, formato AR)
+    // y también soporta "1.234,56" (punto de miles + coma decimal) y "35.5" (punto decimal, sin coma).
+    function logParseNumber(raw) {
+      if (raw == null || raw === "") return 0;
+      let s = String(raw).trim();
+      if (s.includes(",")) {
+        // hay coma: la coma es el separador decimal; los puntos (si hay) son de miles
+        s = s.replace(/\./g, "").replace(",", ".");
+      }
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
+    }
+
+    // Parsea fecha "21/7/2026 00:00" (d/m/aaaa H:mm) -> Date | null
+    function logParseFecha(raw) {
+      if (!raw) return null;
+      const m = String(raw).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+      if (!m) return null;
+      const [, d, mo, y, h = "0", mi = "0"] = m;
+      return new Date(+y, +mo - 1, +d, +h, +mi);
+    }
+
+    function logFormatFecha(d) {
+      if (!d) return "—";
+      const pad = n => String(n).padStart(2, "0");
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function logFormatHora(d) {
+      if (!d) return "—";
+      const pad = n => String(n).padStart(2, "0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    // ── Carga geolocalización ─────────────────────────────────────
+    // Procesa filas ya parseadas (usado tanto por carga manual como automática)
+    function logProcessGeoRows(rows, nombreFuente) {
+      const reqCols = ["id_cliente", "latitude", "longitude"];
+      const missing = reqCols.filter(c => !rows[0] || !(c in rows[0]));
+      if (missing.length) {
+        showToast(`Geolocalización: faltan columnas ${missing.join(", ")}`);
+        return;
+      }
+      // solo filas con coordenadas numéricas válidas; se toman TODAS
+      // (SUCCESS o FAILED) según lo indicado.
+      const seen = new Set();
+      const clean = [];
+      rows.forEach(r => {
+        const lat = parseFloat(r.latitude);
+        const lon = parseFloat(r.longitude);
+        if (isNaN(lat) || isNaN(lon)) return;
+        if (!r.id_cliente) return;
+        if (seen.has(r.id_cliente)) return; // defensivo: primer registro gana
+        seen.add(r.id_cliente);
+        clean.push({ ...r, latitude: lat, longitude: lon });
+      });
+      stateLog.geoRows = clean;
+      document.getElementById("log-geo-name").textContent = nombreFuente;
+      logRebuild();
+    }
+
+    function logLoadGeo(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const delim = logDetectDelimiter(reader.result);
+        Papa.parse(file, {
+          header: true, skipEmptyLines: true, delimiter: delim,
+          complete(res) { logProcessGeoRows(logNormalizeHeaders(res.data), file.name); },
+          error(e) { showToast("Error al leer geolocalización: " + e.message); }
+        });
+      };
+      reader.readAsText(file.slice(0, 4096)); // solo para detectar delimitador
+    }
+
+    // Carga automática: recibe el texto CSV ya descargado desde /api/clientes
+    function logLoadGeoFromText(text, nombreFuente) {
+      const delim = logDetectDelimiter(text);
+      Papa.parse(text, {
+        header: true, skipEmptyLines: true, delimiter: delim,
+        complete(res) { logProcessGeoRows(logNormalizeHeaders(res.data), nombreFuente); },
+        error(e) { showToast("Error al leer geolocalización: " + e.message); }
+      });
+    }
+
+    // ── Carga seguimiento ─────────────────────────────────────────
+    function logProcessSeguimientoRows(rows, nombreFuente, isUpdate, sinCambios) {
+      const reqCols = ["id_cliente", "Motivo"];
+      const missing = reqCols.filter(c => !rows[0] || !(c in rows[0]));
+      if (missing.length) {
+        showToast(`Seguimiento: faltan columnas ${missing.join(", ")}`);
+        return;
+      }
+      stateLog.segRows = rows.filter(r => r.id_cliente);
+      document.getElementById("log-seg-name").textContent = nombreFuente;
+      stateLog.lastUpdate = new Date();
+      const proximaActualizacion = new Date(stateLog.lastUpdate.getTime() + INTERVALO_SEGUIMIENTO_MS);
+      document.getElementById("log-update-row").style.display = "flex";
+      document.getElementById("log-update-ts").innerHTML =
+        `Última actualización: ${logFormatFecha(stateLog.lastUpdate)}` +
+        (sinCambios ? ` <span style="color:var(--c-warning);font-weight:600">(sin cambios)</span>` : "") +
+        `<br>Próxima actualización: ${logFormatHora(proximaActualizacion)}`;
+      logRebuild();
+      if (isUpdate) {
+        if (sinCambios) {
+          showToast("Atención: el seguimiento no registró cambios en los últimos 10 minutos");
+        } else {
+          showToast("Seguimiento actualizado");
+        }
+      }
+    }
+
+    function logLoadSeguimiento(file, isUpdate) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const delim = logDetectDelimiter(reader.result);
+        Papa.parse(file, {
+          header: true, skipEmptyLines: true, delimiter: delim,
+          complete(res) { logProcessSeguimientoRows(logNormalizeHeaders(res.data), file.name, isUpdate); },
+          error(e) { showToast("Error al leer seguimiento: " + e.message); }
+        });
+      };
+      reader.readAsText(file.slice(0, 4096));
+    }
+
+    // Carga automática: recibe el texto CSV ya descargado desde /api/seguimiento
+    function logLoadSeguimientoFromText(text, nombreFuente, isUpdate, sinCambios) {
+      const delim = logDetectDelimiter(text);
+      Papa.parse(text, {
+        header: true, skipEmptyLines: true, delimiter: delim,
+        complete(res) { logProcessSeguimientoRows(logNormalizeHeaders(res.data), nombreFuente, isUpdate, sinCambios); },
+        error(e) { showToast("Error al leer seguimiento: " + e.message); }
+      });
+    }
+
+    // ── Carga sucursales (capa independiente, sin merge con clientes) ──
+    // Acepta variantes de nombres de columna comunes.
+    const SUCURSAL_ALIASES = {
+      sucursal: ["sucursal", "nombre_local", "nombre_sucursal", "nombre"],
+      direccion: ["direccion", "dirección", "domicilio"],
+      latitude: ["latitude", "lat", "latitud"],
+      longitude: ["longitude", "lon", "lng", "longitud"],
+      localidad: ["localidad", "ciudad"],
+      provincia: ["provincia"],
+    };
+
+    function logFindAlias(row, aliases) {
+      const keys = Object.keys(row);
+      for (const alias of aliases) {
+        const found = keys.find(k => k.toLowerCase() === alias.toLowerCase());
+        if (found) return found;
+      }
+      return null;
+    }
+
+    // Convierte filas crudas de sucursales (con alias de columnas) a formato limpio.
+    // Devuelve null si falta algo esencial (y ya mostró el toast correspondiente).
+    function logProcessSucursalesRows(rows) {
+      if (!rows.length) {
+        showToast("Sucursales: el archivo está vacío");
+        return null;
+      }
+      const colSucursal = logFindAlias(rows[0], SUCURSAL_ALIASES.sucursal);
+      const colDireccion = logFindAlias(rows[0], SUCURSAL_ALIASES.direccion);
+      const colLat = logFindAlias(rows[0], SUCURSAL_ALIASES.latitude);
+      const colLon = logFindAlias(rows[0], SUCURSAL_ALIASES.longitude);
+      if (!colSucursal || !colLat || !colLon) {
+        showToast("Sucursales: faltan columnas de nombre/latitud/longitud");
+        return null;
+      }
+      const colLocalidad = logFindAlias(rows[0], SUCURSAL_ALIASES.localidad);
+      const colProvincia = logFindAlias(rows[0], SUCURSAL_ALIASES.provincia);
+
+      const clean = [];
+      rows.forEach(r => {
+        const lat = parseFloat(r[colLat]);
+        const lon = parseFloat(r[colLon]);
+        if (isNaN(lat) || isNaN(lon)) return;
+        clean.push({
+          sucursal: r[colSucursal] || "Sucursal",
+          direccion: colDireccion ? (r[colDireccion] || "") : "",
+          localidad: colLocalidad ? (r[colLocalidad] || "") : "",
+          provincia: colProvincia ? (r[colProvincia] || "") : "",
+          latitude: lat,
+          longitude: lon,
+        });
+      });
+
+      if (!clean.length) {
+        showToast("Sucursales: ninguna fila con coordenadas válidas");
+        return null;
+      }
+      return clean;
+    }
+
+    function logLoadSucursales(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const delim = logDetectDelimiter(reader.result);
+        Papa.parse(file, {
+          header: true, skipEmptyLines: true, delimiter: delim,
+          complete(res) {
+            const clean = logProcessSucursalesRows(logNormalizeHeaders(res.data));
+            if (!clean) return;
+            stateLog.sucursales = clean;
+            state.sucursales = clean;
+            document.getElementById("log-sucursales-name").textContent = file.name;
+            logRenderSucursales();
+            renderSucursales();
+            logRenderLegend(stateLog.merged ? logApplyFilters(stateLog.merged) : []);
+          },
+          error(e) { showToast("Error al leer sucursales: " + e.message); }
+        });
+      };
+      reader.readAsText(file.slice(0, 4096));
+    }
+
+    // Carga automática: recibe el texto CSV ya descargado desde /api/sucursales.
+    // callback(clean) se invoca con la lista lista para usar (o no se invoca si falló).
+    function logLoadSucursalesFromText(text, nombreFuente, callback) {
+      const delim = logDetectDelimiter(text);
+      Papa.parse(text, {
+        header: true, skipEmptyLines: true, delimiter: delim,
+        complete(res) {
+          const clean = logProcessSucursalesRows(logNormalizeHeaders(res.data));
+          if (!clean) return;
+          stateLog.sucursales = clean;
+          state.sucursales = clean;
+          document.getElementById("log-sucursales-name").textContent = nombreFuente;
+          logRenderSucursales();
+          renderSucursales();
+          logRenderLegend(stateLog.merged ? logApplyFilters(stateLog.merged) : []);
+          if (callback) callback(clean);
+        },
+        error(e) { showToast("Error al leer sucursales: " + e.message); }
+      });
+    }
+
+    // ── Clasificación + merge ──────────────────────────────────────
+    function logIsEntregado(motivo) {
+      return (motivo || "").trim().toLowerCase() === "entregado";
+    }
+
+    function logRebuild() {
+      if (!stateLog.geoRows && !stateLog.segRows) return;
+
+      const geoRowsBase = stateLog.geoRows || [];
+
+      // Agrupar seguimiento por id_cliente
+      const byCliente = new Map();
+      if (stateLog.segRows) {
+        stateLog.segRows.forEach(r => {
+          const id = r.id_cliente;
+          if (!byCliente.has(id)) byCliente.set(id, []);
+          byCliente.get(id).push(r);
+        });
+      }
+
+      // Estado + kg agregados por cliente
+      const clienteInfo = new Map();
+      byCliente.forEach((pedidos, id) => {
+        const entregados = pedidos.filter(p => logIsEntregado(p.Motivo));
+        let estado;
+        if (entregados.length === pedidos.length) estado = "entregado";
+        else if (entregados.length === 0) estado = "pendiente";
+        else estado = "parcial";
+        const kgTotal = pedidos.reduce((s, p) => s + logParseNumber(p.KGTotal), 0);
+        const kgEntregado = entregados.reduce((s, p) => s + logParseNumber(p.KGTotal), 0);
+        clienteInfo.set(id, { pedidos, estado, kgTotal, kgEntregado });
+      });
+      stateLog.segByCliente = clienteInfo;
+
+      const hasGeo = !!stateLog.geoRows;
+
+      if (hasGeo) {
+        const geoIds = new Set(geoRowsBase.map(r => r.id_cliente));
+        let unmatchedSeguimiento = 0;
+        byCliente.forEach((_, id) => { if (!geoIds.has(id)) unmatchedSeguimiento++; });
+        stateLog.unmatchedSeguimiento = unmatchedSeguimiento;
+
+        // Merge final para graficar (TODOS los clientes geolocalizados;
+        // el recorte por sucursal ahora se hace en el filtro "Sucursal
+        // asignada", no acá — así el usuario puede destildarlo y ver todo).
+        stateLog.merged = geoRowsBase.map(geoRow => {
+          const info = clienteInfo.get(geoRow.id_cliente);
+          if (!info) {
+            return { ...geoRow, estado: "sin_seguimiento", pedidos: [], kgTotal: 0, kgEntregado: 0 };
+          }
+          return { ...geoRow, estado: info.estado, pedidos: info.pedidos, kgTotal: info.kgTotal, kgEntregado: info.kgEntregado };
+        });
+      } else {
+        // Todavía no se subió el CSV de geolocalización: se arma la
+        // tabla directamente a partir del seguimiento, sin coordenadas
+        // (el mapa queda vacío hasta que se suba la geolocalización).
+        stateLog.unmatchedSeguimiento = 0;
+        stateLog.merged = [...clienteInfo.entries()].map(([id_cliente, info]) => ({
+          id_cliente, estado: info.estado, pedidos: info.pedidos,
+          kgTotal: info.kgTotal, kgEntregado: info.kgEntregado,
+        }));
+      }
+
+      document.getElementById("log-empty-state").style.display = "none";
+      document.getElementById("log-download-section").style.display = "block";
+      document.getElementById("log-filters-section").style.display = "block";
+      document.getElementById("log-view-toggle").style.display = "flex";
+
+      const btnMapa = document.getElementById("log-view-btn-mapa");
+      btnMapa.disabled = !hasGeo;
+      btnMapa.title = hasGeo ? "" : "Subí el CSV de geolocalización para ver el mapa";
+
+      logBuildFiltersUI();
+      logRenderMap();
+      logRenderTable();
+      logUpdateKPIs();
+      logUpdateWarningBanner();
+
+      // Si todavía no hay geolocalización, mostramos la tabla
+      // automáticamente (el mapa no tiene nada para pintar).
+      if (!hasGeo) {
+        logSwitchView("tabla");
+        stateLog.autoSwitchedToTabla = true;
+      } else if (stateLog.autoSwitchedToTabla) {
+        // se acaba de subir la geolocalización: volvemos a la vista de mapa
+        logSwitchView("mapa");
+        stateLog.autoSwitchedToTabla = false;
+      }
+    }
+
+    // ── Filtros ────────────────────────────────────────────────────
+    function logBuildFiltersUI() {
+      // Estado
+      const estadoContainer = document.getElementById("log-filter-estado");
+      estadoContainer.innerHTML = "";
+      const estadosPresentes = [...new Set(stateLog.merged.map(r => r.estado))];
+      // orden fijo y legible
+      const orden = ["entregado", "pendiente", "parcial", "sin_seguimiento"];
+      const estadosOrdenados = orden.filter(e => estadosPresentes.includes(e));
+      const estadoLabels = estadosOrdenados.map(e => LOG_LABEL[e]);
+      const estadoMap = {}; estadosOrdenados.forEach((e, i) => estadoMap[estadoLabels[i]] = e);
+
+      // Mientras el usuario no haya tocado el filtro a mano, el default es
+      // "todos los estados con seguimiento" — los clientes sin seguimiento
+      // (gris) quedan afuera de entrada, pero el usuario los puede activar
+      // libremente desde este mismo filtro.
+      if (!stateLog.selections._userTouchedEstado) {
+        stateLog.selections.estado = estadosOrdenados.filter(e => e !== "sin_seguimiento");
+      }
+      stateLog.selections._estadoFilterActive = true;
+      const selectedLabels = stateLog.selections.estado.map(e => LOG_LABEL[e]);
+
+      const msEstado = createMultiSelect(estadoLabels, selectedLabels, (selected) => {
+        stateLog.selections._userTouchedEstado = true;
+        stateLog.selections.estado = selected.map(l => estadoMap[l]);
+        logRenderMap();
+        logRenderTable();
+        logUpdateKPIs();
+      });
+      estadoContainer.appendChild(msEstado);
+
+      // Sucursal asignada — mismo patrón que Estado: por default solo la
+      // sucursal que se eligió al entrar; el resto queda destildado pero
+      // visible, y el usuario los puede tildar para verlos igual.
+      const sucursalesPresentes = [...new Set(
+        stateLog.merged.map(r => (r.sucursal_asignada || "").trim()).filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "es"));
+      const sucBlock = document.getElementById("log-filter-sucursal-block");
+      const sucContainer = document.getElementById("log-filter-sucursal");
+      sucContainer.innerHTML = "";
+      if (sucursalesPresentes.length) {
+        sucBlock.style.display = "block";
+        stateLog.selections._sucursalFilterActive = true;
+        if (!stateLog.selections._userTouchedSucursal) {
+          const elegida = sucursalSeleccionada ? sucursalSeleccionada.sucursal.trim() : null;
+          // Si la sucursal elegida no tiene ningún cliente con ese nombre
+          // exacto en el CSV, el filtro queda apuntando a un valor que no
+          // existe entre las opciones — todas las casillas quedan
+          // destildadas y el mapa muestra el aviso de "sin coincidencias"
+          // en vez de mostrar clientes de otra sucursal por error.
+          stateLog.selections.sucursal = elegida ? [elegida] : sucursalesPresentes;
+        }
+        const msSuc = createMultiSelect(sucursalesPresentes, stateLog.selections.sucursal, (selected) => {
+          stateLog.selections._userTouchedSucursal = true;
+          stateLog.selections.sucursal = selected;
+          logRenderMap();
+          logRenderTable();
+          logUpdateKPIs();
+        });
+        sucContainer.appendChild(msSuc);
+      } else {
+        sucBlock.style.display = "none";
+      }
+
+      // Hoja de ruta — TODAS las que aparezcan en el CSV de seguimiento,
+      // tengan o no geolocalización asociada (por eso se toma de
+      // stateLog.segRows completo, no solo de los que matchearon con el
+      // CSV de clientes). Todas tildadas por default.
+      const hojasPresentes = [...new Set(
+        (stateLog.segRows || []).map(r => (r.ID_HojaRuta || "").trim()).filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "es"));
+      const hrBlock = document.getElementById("log-filter-hojaruta-block");
+      const hrContainer = document.getElementById("log-filter-hojaruta");
+      hrContainer.innerHTML = "";
+      if (hojasPresentes.length) {
+        hrBlock.style.display = "block";
+        stateLog.selections._hojaRutaFilterActive = true;
+        if (!stateLog.selections._hojaRutaUnchecked) stateLog.selections._hojaRutaUnchecked = new Set();
+        // Tildadas: todas menos las que el usuario destildó a mano. Así, si
+        // aparece una hoja de ruta nueva en un refresco automático, queda
+        // tildada por default (no hace falta activarla a mano).
+        stateLog.selections.hojaRuta = hojasPresentes.filter(
+          h => !stateLog.selections._hojaRutaUnchecked.has(h));
+        const msHoja = createMultiSelect(hojasPresentes, stateLog.selections.hojaRuta, (selected) => {
+          stateLog.selections.hojaRuta = selected;
+          stateLog.selections._hojaRutaUnchecked = new Set(
+            hojasPresentes.filter(h => !selected.includes(h)));
+          logRenderMap();
+          logRenderTable();
+          logUpdateKPIs();
+        });
+        hrContainer.appendChild(msHoja);
+      } else {
+        hrBlock.style.display = "none";
+      }
+    }
+
+    function logApplyFilters(rows) {
+      return rows.filter(r => {
+        if (stateLog.selections._estadoFilterActive && !stateLog.selections.estado.includes(r.estado)) return false;
+
+        if (stateLog.selections._sucursalFilterActive) {
+          const suc = (r.sucursal_asignada || "").trim();
+          if (suc && !stateLog.selections.sucursal.includes(suc)) return false;
+        }
+
+        if (stateLog.selections._hojaRutaFilterActive) {
+          const hojasFila = (r.pedidos || []).map(p => (p.ID_HojaRuta || "").trim()).filter(Boolean);
+          if (hojasFila.length && !hojasFila.some(h => stateLog.selections.hojaRuta.includes(h))) return false;
+        }
+
+        return true;
+      });
+    }
+
+    // ── Mapa ──────────────────────────────────────────────────────
+    function logInitMap(centro) {
+      if (stateLog.mapInited) return;
+      const vista = centro ? [centro.latitude, centro.longitude] : [-38.95, -68.06];
+      stateLog.map = L.map("map-logistica", { zoomControl: true }).setView(vista, centro ? 12 : 8);
+      L.tileLayer("https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png", {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, estilo <a href="https://maps.wikimedia.org">Wikimedia</a>',
+        maxZoom: 19,
+      }).addTo(stateLog.map);
+      stateLog.mapInited = true;
+    }
+
+    function logRenderMap() {
+      if (!stateLog.map || !stateLog.merged) return;
+      stateLog.markers.forEach(m => m.remove());
+      stateLog.markers = [];
+
+      const filtered = logApplyFilters(stateLog.merged);
+      const bounds = [];
+
+      document.getElementById("log-nomatch-state").style.display =
+        (stateLog.merged.length && !filtered.length) ? "flex" : "none";
+
+      filtered.forEach(row => {
+        const lat = parseFloat(row.latitude);
+        const lon = parseFloat(row.longitude);
+        if (isNaN(lat) || isNaN(lon)) return; // sin coordenadas (solo seguimiento, sin geo todavía)
+
+        const hex = LOG_COLOR[row.estado] || "#888888";
+        const icon = buildMarkerIcon(hex);
+
+        const idCli = row.id_cliente || "—";
+        const dir = row.original_address || "—";
+        const pedidos = row.pedidos || [];
+        const clienteNombre = pedidos.length ? (pedidos[0].Cliente || "—") : "—";
+
+        let pedidosHtml = "";
+        if (pedidos.length) {
+          // Agrupamos por Nº de Factura: si la misma factura aparece más de
+          // una vez para este cliente, no repetimos el bloque completo — se
+          // avisa en una sola línea y listo.
+          const porFactura = new Map();
+          pedidos.forEach(p => {
+            const clave = (p.Factura || "").trim() || "(sin factura)";
+            if (!porFactura.has(clave)) porFactura.set(clave, []);
+            porFactura.get(clave).push(p);
+          });
+
+          // El nombre del cliente ya se muestra una sola vez arriba del
+          // popup: acá no se repite por cada factura, para no parecer que
+          // el mismo cliente aparece "duplicado".
+          pedidosHtml = [...porFactura.values()].map((grupo, i) => {
+            const separador = i === 0 ? "" : `<tr><td colspan="2" style="padding-top:6px;border-top:1px solid #eee;"></td></tr>`;
+            if (grupo.length > 1) {
+              return `
+                ${separador}
+                <tr><td colspan="2" style="color:#c0392b;font-weight:600">
+                  Hay ${grupo.length} facturas duplicadas
+                </td></tr>`;
+            }
+            const p = grupo[0];
+            return `
+              ${separador}
+              <tr><td style="color:#666;padding-right:8px;">Factura</td><td>${p.Factura || "—"}</td></tr>
+              <tr><td style="color:#666;padding-right:8px;">Hoja de ruta</td><td>${p.ID_HojaRuta || "—"}</td></tr>
+              <tr><td style="color:#666;padding-right:8px;">Patente</td><td>${p.Patente || "—"}</td></tr>
+              <tr><td style="color:#666;padding-right:8px;">Inicio transp.</td><td>${p.InicioTransp || "—"}</td></tr>
+              <tr><td style="color:#666;padding-right:8px;">Entrega real</td><td>${p.EntregaReal || "—"}</td></tr>
+              <tr><td style="color:#666;padding-right:8px;">Motivo</td><td>${p.Motivo || "(vacío)"}</td></tr>
+              <tr><td style="color:#666;padding-right:8px;">Kg totales</td><td>${logParseNumber(p.KGTotal).toLocaleString("es-AR")}</td></tr>
+            `;
+          }).join("");
+        } else {
+          pedidosHtml = `<tr><td colspan="2" style="color:#888;padding-top:6px;">Sin información de seguimiento</td></tr>`;
+        }
+
+        const popup = `
+          <div style="font-family:system-ui,sans-serif;font-size:12px;min-width:210px;line-height:1.6">
+            <div style="font-weight:700;font-size:13px;margin-bottom:2px">${LOG_LABEL[row.estado]}</div>
+            <div style="color:#888;font-size:10px;margin-bottom:6px">ID: ${idCli}</div>
+            <div style="font-weight:700;margin-bottom:4px">${clienteNombre}</div>
+            <table style="border-collapse:collapse;width:100%">
+              <tr><td style="color:#666;padding-right:8px;">Dirección</td><td>${dir}</td></tr>
+              ${pedidosHtml}
+            </table>
+          </div>`;
+
+        const marker = L.marker([lat, lon], { icon })
+          .bindPopup(popup, { maxWidth: 300 });
+
+        marker.addTo(stateLog.map);
+        stateLog.markers.push(marker);
+        bounds.push([lat, lon]);
+      });
+
+      if (sucursalSeleccionada && !sucursalVistaAplicada) {
+        // Primera vez que hay datos después de elegir sucursal: centramos ahí
+        // y con un zoom que muestre el puntito, en vez de encuadrar todos los
+        // puntos de entrega (que pueden estar muy dispersos).
+        stateLog.map.setView([sucursalSeleccionada.latitude, sucursalSeleccionada.longitude], 13);
+        sucursalVistaAplicada = true;
+      } else if (!sucursalSeleccionada && bounds.length) {
+        // Sin sucursal elegida (uso manual, como antes): comportamiento original.
+        stateLog.map.fitBounds(bounds, { padding: [40, 40] });
+      }
+      // Si ya se aplicó la vista de la sucursal, no se vuelve a mover el mapa
+      // solo en los refrescos automáticos siguientes — así el usuario puede
+      // hacer zoom/paneo libremente sin que se lo pisen cada 10 minutos.
+
+      logRenderSucursales();
+      logRenderLegend(filtered);
+    }
+
+    // ── Ícono de sucursal ("tiendita"): totalmente distinto al pin ──
+    // en forma de gota que usan los clientes, para que se reconozca
+    // de un vistazo como otra categoría de punto en el mapa.
+    let sucursalIconCache = null;
+    function buildSucursalIcon() {
+      if (sucursalIconCache) return sucursalIconCache;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
+        <circle cx="15" cy="15" r="14" fill="#1a1c1e" stroke="#fff" stroke-width="2"/>
+        <g transform="translate(6,7)">
+          <path d="M0 4 L2 0 L16 0 L18 4 Z" fill="#fff"/>
+          <rect x="0" y="4" width="18" height="2" fill="#fff" opacity="0.6"/>
+          <rect x="1.5" y="6.5" width="15" height="9" fill="none" stroke="#fff" stroke-width="1.4"/>
+          <rect x="7" y="10.5" width="4" height="5" fill="#fff"/>
+        </g>
+      </svg>`;
+      sucursalIconCache = L.divIcon({
+        html: svg,
+        className: "",
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -15],
+      });
+      return sucursalIconCache;
+    }
+
+    function renderSucursales() {
+      if (!state.map) return;
+      state.sucursalMarkers.forEach(m => m.remove());
+      state.sucursalMarkers = [];
+
+      if (!state.sucursales || !state.sucursales.length) return;
+
+      const icon = buildSucursalIcon();
+      state.sucursales.forEach(s => {
+        let extra = "";
+        if (s.localidad) extra += `<tr><td style="color:#666;padding-right:8px;">Localidad</td><td>${s.localidad}</td></tr>`;
+        if (s.provincia) extra += `<tr><td style="color:#666;padding-right:8px;">Provincia</td><td>${s.provincia}</td></tr>`;
+
+        const popup = `
+          <div style="font-family:system-ui,sans-serif;font-size:12px;min-width:190px;line-height:1.6">
+            <div style="font-weight:700;font-size:13px;margin-bottom:4px">${s.sucursal}</div>
+            <table style="border-collapse:collapse;width:100%">
+              <tr><td style="color:#666;padding-right:8px;">Dirección</td><td>${s.direccion || "—"}</td></tr>
+              ${extra}
+            </table>
+          </div>`;
+
+        const marker = L.marker([s.latitude, s.longitude], { icon })
+          .bindPopup(popup, { maxWidth: 280 })
+          .bindTooltip(s.sucursal, { direction: "top", offset: [0, -12] });
+
+        marker.addTo(state.map);
+        state.sucursalMarkers.push(marker);
+      });
+      // Igual que en Logística: estos puntos NO participan del fitBounds
+      // del mapa (el encuadre sigue determinado únicamente por los clientes).
+    }
+
+    function logRenderSucursales() {
+      if (!stateLog.map) return;
+      stateLog.sucursalMarkers.forEach(m => m.remove());
+      stateLog.sucursalMarkers = [];
+
+      if (!stateLog.sucursales || !stateLog.sucursales.length) return;
+
+      const icon = buildSucursalIcon();
+      stateLog.sucursales.forEach(s => {
+        let extra = "";
+        if (s.localidad) extra += `<tr><td style="color:#666;padding-right:8px;">Localidad</td><td>${s.localidad}</td></tr>`;
+        if (s.provincia) extra += `<tr><td style="color:#666;padding-right:8px;">Provincia</td><td>${s.provincia}</td></tr>`;
+
+        const popup = `
+          <div style="font-family:system-ui,sans-serif;font-size:12px;min-width:190px;line-height:1.6">
+            <div style="font-weight:700;font-size:13px;margin-bottom:4px">${s.sucursal}</div>
+            <table style="border-collapse:collapse;width:100%">
+              <tr><td style="color:#666;padding-right:8px;">Dirección</td><td>${s.direccion || "—"}</td></tr>
+              ${extra}
+            </table>
+          </div>`;
+
+        const marker = L.marker([s.latitude, s.longitude], { icon })
+          .bindPopup(popup, { maxWidth: 280 })
+          .bindTooltip(s.sucursal, { direction: "top", offset: [0, -12] });
+
+        marker.addTo(stateLog.map);
+        stateLog.sucursalMarkers.push(marker);
+      });
+      // Nota: estos puntos NO participan del fitBounds del mapa
+      // (el encuadre sigue determinado únicamente por los clientes).
+    }
+
+    function logRenderLegend(filtered) {
+      const overlay = document.getElementById("log-legend-overlay");
+      const container = document.getElementById("log-legend-items");
+      const estadosPresentes = [...new Set(filtered.map(r => r.estado))];
+      const orden = ["entregado", "pendiente", "parcial", "sin_seguimiento"];
+      const ordenados = orden.filter(e => estadosPresentes.includes(e));
+
+      const hasSucursales = !!(stateLog.sucursales && stateLog.sucursales.length);
+      let sucursalItem = "";
+      if (hasSucursales) {
+        sucursalItem = `
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#1a1c1e"></div>
+          <span>Sucursal</span>
+        </div>`;
+      }
+
+      if (!ordenados.length && !hasSucursales) { overlay.classList.remove("visible"); return; }
+
+      container.innerHTML = ordenados.map(e => `
+        <div class="legend-item">
+          <div class="legend-dot" style="background:${LOG_COLOR[e]}"></div>
+          <span>${LOG_LABEL[e]}</span>
+        </div>`).join("") + sucursalItem;
+      overlay.classList.add("visible");
+    }
+
+    // ── KPIs ──────────────────────────────────────────────────────
+    function logUpdateKPIs() {
+      if (!stateLog.merged) return;
+      const filtered = logApplyFilters(stateLog.merged);
+      const idsFiltrados = new Set(filtered.map(r => r.id_cliente));
+
+      // Conteo de CLIENTES por estado (coincide 1 a 1 con los colores del mapa/leyenda)
+      const cEntregado = filtered.filter(r => r.estado === "entregado").length;
+      const cPendiente = filtered.filter(r => r.estado === "pendiente").length;
+      const cParcial = filtered.filter(r => r.estado === "parcial").length;
+      const cTotal = cEntregado + cPendiente + cParcial; // clientes con seguimiento visibles según filtro
+
+      // Kg entregados / % cumplimiento se calculan a nivel PEDIDO (fila de
+      // seguimiento), no a nivel cliente, para no perder precisión cuando
+      // hay varios pedidos por cliente.
+      let kgEntregado = 0, kgTotal = 0;
+      if (stateLog.segRows) {
+        stateLog.segRows.forEach(p => {
+          if (!idsFiltrados.has(p.id_cliente)) return;
+          const kg = logParseNumber(p.KGTotal);
+          kgTotal += kg;
+          if (logIsEntregado(p.Motivo)) kgEntregado += kg;
+        });
+      }
+      const pct = kgTotal > 0 ? (kgEntregado / kgTotal * 100) : 0;
+
+      const hasData = !!stateLog.segRows;
+      document.getElementById("log-kpi-bar").style.display = hasData ? "flex" : "none";
+      document.getElementById("log-kpi-placeholder").style.display = hasData ? "none" : "flex";
+
+      document.getElementById("log-kpi-clientes").textContent = cTotal;
+      document.getElementById("log-kpi-c-entregado").textContent = cEntregado;
+      document.getElementById("log-kpi-c-pendiente").textContent = cPendiente;
+      document.getElementById("log-kpi-c-parcial").textContent = cParcial;
+      document.getElementById("log-kpi-kg").textContent = kgEntregado.toLocaleString("es-AR", { maximumFractionDigits: 1 }) + " kg";
+      document.getElementById("log-kpi-pct").textContent = pct.toLocaleString("es-AR", { maximumFractionDigits: 1 }) + "%";
+    }
+
+    // ── Vista Tabla (listado por cliente) ────────────────────────────
+    function logRenderTable() {
+      const emptyState = document.getElementById("log-table-empty-state");
+      const table = document.getElementById("log-table");
+      const tbody = document.getElementById("log-tbody");
+
+      if (!stateLog.merged || !stateLog.merged.length) {
+        emptyState.style.display = "flex";
+        table.style.display = "none";
+        return;
+      }
+
+      emptyState.style.display = "none";
+      table.style.display = "table";
+
+      const filtered = logApplyFilters(stateLog.merged);
+      const ordenEstado = { entregado: 0, pendiente: 1, parcial: 2, sin_seguimiento: 3 };
+      const ordenados = [...filtered].sort((a, b) => {
+        const diff = ordenEstado[a.estado] - ordenEstado[b.estado];
+        if (diff !== 0) return diff;
+        return String(a.id_cliente).localeCompare(String(b.id_cliente));
+      });
+
+      tbody.innerHTML = ordenados.map(row => {
+        const colorHex = LOG_COLOR[row.estado] || "#888888";
+        const pedidos = row.pedidos || [];
+        const clienteNombre = pedidos.length ? (pedidos[0].Cliente || "—") : "—";
+        const entregadas = pedidos.filter(p => logIsEntregado(p.Motivo)).length;
+        const facturasTxt = pedidos.length ? `${entregadas}/${pedidos.length}` : "—";
+        const kgTxt = pedidos.length ? row.kgTotal.toLocaleString("es-AR", { maximumFractionDigits: 1 }) + " kg" : "—";
+        return `<tr>
+          <td>${row.id_cliente || "—"}</td>
+          <td>${clienteNombre}</td>
+          <td><span class="log-estado-badge" style="background:${colorHex}22;color:${colorHex}"><span class="dot" style="background:${colorHex}"></span>${LOG_LABEL[row.estado]}</span></td>
+          <td>${facturasTxt}</td>
+          <td>${kgTxt}</td>
+          <td>${row.original_address || "—"}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    // ── Aviso de registros sin coincidencia ─────────────────────────
+    function logUpdateWarningBanner() {
+      const banner = document.getElementById("log-warning-banner");
+      const text = document.getElementById("log-warning-text");
+      if (stateLog.unmatchedSeguimiento > 0) {
+        text.textContent = `${stateLog.unmatchedSeguimiento} cliente(s) del CSV de seguimiento no tienen coordenadas en el archivo de geolocalización y no se muestran en el mapa.`;
+        banner.classList.add("visible");
+      } else {
+        banner.classList.remove("visible");
+      }
+    }
+
+    // ── Exportar filtrado ─────────────────────────────────────────
+    document.getElementById("log-btn-download").addEventListener("click", () => {
+      if (!stateLog.merged) return;
+      const filtered = logApplyFilters(stateLog.merged);
+      const flat = filtered.map(r => ({
+        id_cliente: r.id_cliente,
+        original_address: r.original_address,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        estado: LOG_LABEL[r.estado],
+        cantidad_pedidos: (r.pedidos || []).length,
+        kg_total: r.kgTotal,
+        kg_entregado: r.kgEntregado,
+      }));
+      const csv = Papa.unparse(flat);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+      a.href = url; a.download = `logistica_filtrado_${ts}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ── Botón "Actualizar ahora": fuerza un refresco inmediato de los
+    // datos automáticos (seguimiento + clientes), sin esperar los 10 min.
+    document.getElementById("log-btn-update").addEventListener("click", () => {
+      cargarSeguimientoAutomatico(true);
+      cargarClientesAutomatico();
+    });
+
+
+    // ── Toggle Mapa / Tabla (vista interna de Logística) ─────────────
+    function logSwitchView(view) {
+      document.getElementById("log-view-btn-mapa").classList.toggle("active", view === "mapa");
+      document.getElementById("log-view-btn-tabla").classList.toggle("active", view === "tabla");
+      document.getElementById("log-map-view").style.display = view === "mapa" ? "flex" : "none";
+      document.getElementById("log-table-view").classList.toggle("visible", view === "tabla");
+      if (view === "mapa" && stateLog.map) setTimeout(() => stateLog.map.invalidateSize(), 50);
+    }
+    document.getElementById("log-view-btn-mapa").addEventListener("click", () => logSwitchView("mapa"));
+    document.getElementById("log-view-btn-tabla").addEventListener("click", () => logSwitchView("tabla"));
+
+    // ══════════════════════════════════════════════════════════════
+    // TABS
+    // ══════════════════════════════════════════════════════════════
+    document.getElementById("tab-btn-visor").addEventListener("click", () => {
+      document.getElementById("tab-btn-visor").classList.add("active");
+      document.getElementById("tab-btn-logistica").classList.remove("active");
+      document.getElementById("view-visor").classList.add("active");
+      document.getElementById("view-logistica").classList.remove("active");
+      setTimeout(() => state.map && state.map.invalidateSize(), 50);
+    });
+
+    document.getElementById("tab-btn-logistica").addEventListener("click", () => {
+      document.getElementById("tab-btn-logistica").classList.add("active");
+      document.getElementById("tab-btn-visor").classList.remove("active");
+      document.getElementById("view-logistica").classList.add("active");
+      document.getElementById("view-visor").classList.remove("active");
+      logInitMap();
+      setTimeout(() => stateLog.map && stateLog.map.invalidateSize(), 50);
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // SELECCIÓN DE SUCURSAL + CARGA AUTOMÁTICA (vía app_visor.py)
+    // ══════════════════════════════════════════════════════════════
+    const INTERVALO_SEGUIMIENTO_MS = 10 * 60 * 1000; // 10 minutos
+    let sucursalSeleccionada = null;
+    let sucursalVistaAplicada = false; // evita que el auto-refresco recentre el mapa después de la primera vez
+
+    function mostrarErrorSucursales(msg) {
+      document.getElementById("sucursal-list").innerHTML =
+        `<div class="sucursal-error">${msg}</div>`;
+    }
+
+    function renderSucursalesModal(lista) {
+      const cont = document.getElementById("sucursal-list");
+      cont.innerHTML = "";
+      lista.forEach(s => {
+        const btn = document.createElement("button");
+        btn.className = "sucursal-option";
+        btn.type = "button";
+        const sub = [s.localidad, s.provincia].filter(Boolean).join(", ");
+        btn.innerHTML = `${s.sucursal}${sub ? `<div class="so-sub">${sub}</div>` : ""}`;
+        btn.addEventListener("click", () => seleccionarSucursal(s));
+        cont.appendChild(btn);
+      });
+    }
+
+    function seleccionarSucursal(s) {
+      sucursalSeleccionada = s;
+      sucursalVistaAplicada = false;
+      document.getElementById("sucursal-overlay").classList.add("hidden");
+
+      if (state.map) state.map.setView([s.latitude, s.longitude], 12);
+      if (stateLog.map) stateLog.map.setView([s.latitude, s.longitude], 12);
+
+      iniciarCargaAutomatica();
+    }
+
+    // Actualiza el puntito + texto de estado del bloque "Datos" en la sidebar
+    function actualizarEstadoDatos(mensaje, tipo) {
+      const dot = document.getElementById("log-datos-dot");
+      const texto = document.getElementById("log-datos-texto");
+      if (!dot || !texto) return;
+      dot.classList.remove("ok", "error", "warning");
+      if (tipo) dot.classList.add(tipo);
+      texto.textContent = mensaje;
+    }
+
+    // Clientes geolocalizados: cambian poco, se cargan una sola vez al inicio.
+    function cargarClientesAutomatico() {
+      fetch("/api/clientes")
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(text => logLoadGeoFromText(text, "clientes (auto)"))
+        .catch(() => {
+          showToast("No se pudo cargar el CSV de clientes desde el servidor");
+          actualizarEstadoDatos("Error al leer clientes", "error");
+          abrirConfigModal("clientes", "No se pudo leer el archivo de clientes desde la ruta configurada.");
+        });
+    }
+
+    // Seguimiento: se relee del disco en cada pedido. Se pide ahora y luego
+    // cada 10 minutos (setInterval), como pediste.
+    function cargarSeguimientoAutomatico(esActualizacion) {
+      fetch("/api/seguimiento")
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(text => {
+          // Si es un refresco automático (no la primera carga) y el texto
+          // crudo es idéntico al de la vez anterior, el archivo no cambió
+          // en el disco en estos últimos 10 minutos.
+          const sinCambios = esActualizacion
+            && stateLog.ultimoTextoSeguimiento !== null
+            && text === stateLog.ultimoTextoSeguimiento;
+          stateLog.ultimoTextoSeguimiento = text;
+
+          logLoadSeguimientoFromText(text, "seguimiento (auto)", esActualizacion, sinCambios);
+          actualizarEstadoDatos(
+            sinCambios ? "Sin cambios en el último refresco" : "Datos al día",
+            sinCambios ? "warning" : "ok");
+        })
+        .catch(() => {
+          showToast("No se pudo leer el archivo de seguimiento");
+          actualizarEstadoDatos("Error al leer seguimiento", "error");
+          abrirConfigModal("seguimiento", "No se pudo leer el archivo de seguimiento desde la ruta configurada.");
+        });
+    }
+
+    function iniciarCargaAutomatica() {
+      cargarClientesAutomatico();
+      cargarSeguimientoAutomatico(false);
+      setInterval(() => cargarSeguimientoAutomatico(true), INTERVALO_SEGUIMIENTO_MS);
+    }
+
+    function cargarSucursalesInicial() {
+      fetch("/api/sucursales")
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(text => {
+          logLoadSucursalesFromText(text, "sucursales (auto)", clean => renderSucursalesModal(clean));
+        })
+        .catch(() => mostrarErrorSucursales(
+          "No se pudo conectar con app_visor.py. Verificá que el servidor esté corriendo " +
+          "(ejecutá: python app_visor.py) y que las rutas configuradas sean correctas."));
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // CONFIGURACIÓN DE ARCHIVOS (clientes / seguimiento)
+    // ══════════════════════════════════════════════════════════════
+    const CONFIG_ETIQUETAS = { clientes: "clientes", seguimiento: "seguimiento" };
+
+    function elementosCampoConfig(clave) {
+      const campo = document.querySelector(`.config-field[data-clave="${clave}"]`);
+      return {
+        campo,
+        dot: campo.querySelector(".dot"),
+        statusText: campo.querySelector(".config-field-status-text"),
+        input: campo.querySelector('input[type="text"]'),
+        btnGuardar: campo.querySelector('[data-accion="guardar"]'),
+        btnRestablecer: campo.querySelector('[data-accion="restablecer"]'),
+        errorBox: campo.querySelector(".config-field-error"),
+      };
+    }
+
+    function pintarEstadoCampoConfig(clave, info) {
+      const el = elementosCampoConfig(clave);
+      el.dot.classList.remove("ok", "error");
+      el.dot.classList.add(info.existe ? "ok" : "error");
+      const origenTxt = info.origen === "personalizada" ? "ruta personalizada" : "valor por defecto";
+      el.statusText.textContent = `${info.existe ? "Encontrado" : "No encontrado"} · usando ${origenTxt}`;
+      el.input.value = info.ruta;
+      el.input.placeholder = info.ruta_por_defecto;
+      el.btnRestablecer.disabled = info.origen !== "personalizada";
+      el.input.classList.remove("error");
+      el.errorBox.textContent = "";
+    }
+
+    function cargarEstadoConfig() {
+      return fetch("/api/config")
+        .then(r => r.json())
+        .then(estado => {
+          Object.keys(CONFIG_ETIQUETAS).forEach(clave => pintarEstadoCampoConfig(clave, estado[clave]));
+          return estado;
+        })
+        .catch(() => showToast("No se pudo consultar la configuración de rutas"));
+    }
+
+    function guardarRutaConfig(clave) {
+      const el = elementosCampoConfig(clave);
+      const valor = el.input.value.trim();
+      if (!valor) {
+        el.input.classList.add("error");
+        el.errorBox.textContent = "Escribí una ruta, o usá \"Restablecer\" para volver al valor por defecto.";
+        return;
+      }
+      el.btnGuardar.disabled = true;
+      fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [clave]: valor }),
+      })
+        .then(r => r.json().then(datos => ({ ok: r.ok, datos })))
+        .then(({ ok, datos }) => {
+          el.btnGuardar.disabled = false;
+          if (!ok) {
+            el.input.classList.add("error");
+            el.errorBox.textContent = (datos.errores && datos.errores[clave]) || "No se pudo guardar la ruta.";
+            return;
+          }
+          pintarEstadoCampoConfig(clave, datos[clave]);
+          showToast(`Ruta de ${CONFIG_ETIQUETAS[clave]} actualizada`);
+          reintentarCarga(clave);
+        })
+        .catch(() => {
+          el.btnGuardar.disabled = false;
+          el.errorBox.textContent = "No se pudo conectar con el servidor.";
+        });
+    }
+
+    function restablecerRutaConfig(clave) {
+      const el = elementosCampoConfig(clave);
+      el.btnRestablecer.disabled = true;
+      fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [clave]: "" }),
+      })
+        .then(r => r.json())
+        .then(datos => {
+          pintarEstadoCampoConfig(clave, datos[clave]);
+          showToast(`Ruta de ${CONFIG_ETIQUETAS[clave]} restablecida al valor por defecto`);
+          reintentarCarga(clave);
+        })
+        .catch(() => showToast("No se pudo restablecer la ruta"));
+    }
+
+    // Después de guardar/restablecer una ruta, reintenta cargar ese dato
+    // puntual sin que el usuario tenga que recargar la página entera.
+    function reintentarCarga(clave) {
+      if (clave === "clientes") cargarClientesAutomatico();
+      if (clave === "seguimiento") cargarSeguimientoAutomatico(false);
+    }
+
+    function abrirConfigModal(claveAResaltar, mensaje) {
+      document.getElementById("config-overlay").classList.remove("hidden");
+      cargarEstadoConfig();
+      if (mensaje) showToast(mensaje);
+      if (claveAResaltar) {
+        const el = elementosCampoConfig(claveAResaltar);
+        setTimeout(() => el.input.focus(), 50);
+      }
+    }
+
+    function cerrarConfigModal() {
+      document.getElementById("config-overlay").classList.add("hidden");
+    }
+
+    document.getElementById("btn-abrir-config").addEventListener("click", () => abrirConfigModal());
+    document.getElementById("config-close-btn").addEventListener("click", cerrarConfigModal);
+    document.getElementById("config-overlay").addEventListener("click", e => {
+      if (e.target.id === "config-overlay") cerrarConfigModal();
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && !document.getElementById("config-overlay").classList.contains("hidden")) {
+        cerrarConfigModal();
+      }
+    });
+
+    Object.keys(CONFIG_ETIQUETAS).forEach(clave => {
+      const el = elementosCampoConfig(clave);
+      el.btnGuardar.addEventListener("click", () => guardarRutaConfig(clave));
+      el.btnRestablecer.addEventListener("click", () => restablecerRutaConfig(clave));
+      el.input.addEventListener("keydown", e => {
+        if (e.key === "Enter") guardarRutaConfig(clave);
+      });
+    });
+
+    // ══════════════════════════════════════════════════════════════
     // INIT
     // ══════════════════════════════════════════════════════════════
     initMap();
+    logInitMap();
+    cargarSucursalesInicial();
   </script>
 </body>
 
