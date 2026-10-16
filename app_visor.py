@@ -120,6 +120,7 @@ PATRONES_BUSQUEDA = {
     # Hoja de ruta (archivos extra, no pasan por la configuración del visor)
     "flota": ["flota"],
     "tipos": ["tipos_camion"],
+    "horarios": ["ventanas_horarias"],
 }
 
 # Extensiones que se consideran candidatas al buscar por patrón.
@@ -237,7 +238,7 @@ def consultar_osrm(payload: dict) -> dict:
         raise ValueError("pedido OSRM inválido (servicio o cantidad de puntos)")
     cadena = ";".join(f"{float(lon):.6f},{float(lat):.6f}" for lat, lon in coords)
     if servicio == "table":
-        url = f"{OSRM_URL}/table/v1/driving/{cadena}?annotations=distance"
+        url = f"{OSRM_URL}/table/v1/driving/{cadena}?annotations=distance,duration"
         for clave in ("sources", "destinations"):
             if payload.get(clave) is not None:
                 url += f"&{clave}=" + ";".join(str(int(i)) for i in payload[clave])
@@ -265,7 +266,7 @@ def ruta_extra(clave: str) -> Path:
     """Archivos de la pestaña Hoja de ruta: flota.csv y tipos_camion.csv, en la
     carpeta de datos efectiva (o encontrados por patrón en el nombre)."""
     carpeta = carpeta_efectiva(cargar_overrides())
-    exacta = carpeta / {"flota": "flota.csv", "tipos": "tipos_camion.csv"}[clave]
+    exacta = carpeta / {"flota": "flota.csv", "tipos": "tipos_camion.csv", "horarios": "ventanas_horarias.csv"}[clave]
     if exacta.is_file():
         return exacta
     return buscar_por_patron(clave, carpeta) or exacta
@@ -546,7 +547,7 @@ class VisorHandler(BaseHTTPRequestHandler):
             self._responder_csv(ruta_efectiva(rutas_api[ruta]))
             return
 
-        if ruta in ("/api/flota", "/api/tipos"):
+        if ruta in ("/api/flota", "/api/tipos", "/api/horarios"):
             self._responder_csv(ruta_extra(ruta[5:]))
             return
 

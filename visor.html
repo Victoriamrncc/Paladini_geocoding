@@ -1836,6 +1836,10 @@
           <div class="kpi-card-value ok" id="rk-clientes">—</div>
         </div>
         <div class="kpi-card">
+          <div class="kpi-card-label">Días necesarios</div>
+          <div class="kpi-card-value" id="rk-dias">—</div>
+        </div>
+        <div class="kpi-card">
           <div class="kpi-card-label">Sin asignar</div>
           <div class="kpi-card-value warn" id="rk-sin">—</div>
         </div>
@@ -1851,6 +1855,7 @@
       <div class="log-view-toggle" id="rutas-toggle" style="display:none">
         <button class="log-view-btn active" id="rutas-btn-mapa" type="button">Mapa</button>
         <button class="log-view-btn" id="rutas-btn-tabla" type="button">Tabla</button>
+        <select class="filter-select" id="rutas-dia" style="display:none;margin-left:12px;width:auto"></select>
       </div>
       <div id="rutas-map-view" style="display:flex;flex-direction:column;flex:1;position:relative;overflow:hidden;">
         <div id="map-rutas"></div>
@@ -1869,6 +1874,8 @@
               <th>Kg</th>
               <th>Km tramo</th>
               <th>Km acum.</th>
+              <th>Llegada est.</th>
+              <th>Ventana</th>
             </tr>
           </thead>
           <tbody id="rutas-tbody"></tbody>
@@ -3982,43 +3989,136 @@
         return 12742.0176 * Math.asin(Math.sqrt(h));
       };
       const sumKg = g => g.reduce((s, p) => s + p.kg, 0);
-      // D = matriz de km (índice 0 = sucursal; cada parada trae su índice "ix").
-      // Llena camiones (de mayor a menor) con clientes cercanos entre sí sin pasar la capacidad,
-      // asigna cada grupo al camión más chico donde entra y ordena por vecino más cercano.
-      function planificar(paradas, camiones, D) {
-        let pend = paradas.slice(); const grupos = [];
-        for (const cam of camiones.slice().sort((a, b) => b.cap - a.cap)) {
-          if (!pend.length) break;
-          let libre = cam.cap, c = pend.filter(p => p.kg <= libre);
-          if (!c.length) continue;
-          const sem = c.reduce((m, p) => D[0][p.ix] > D[0][m.ix] ? p : m);
-          const g = [sem]; pend = pend.filter(p => p !== sem); libre -= sem.kg;
-          for (; ;) {
-            c = pend.filter(p => p.kg <= libre); if (!c.length) break;
-            const prom = x => g.reduce((s, q) => s + D[q.ix][x.ix], 0) / g.length;
-            const sig = c.reduce((m, p) => prom(p) < prom(m) ? p : m);
-            g.push(sig); pend = pend.filter(p => p !== sig); libre -= sig.kg;
-          }
-          grupos.push(g);
+      // Si se pasa T = { M, salida, serv, jornada } (M = minutos de manejo entre puntos, salida = minuto del día
+      // en que sale el camión, serv = minutos de descarga según kg, jornada = minutos máximos de salida a
+      // regreso), se calculan horas de llegada y se respetan las ventanas p.vd / p.vh (minutos del día,
+      // o null). Sin T funciona como antes.
+      function ordenVentanas(g, D, T, edd) {
+        let resto = g.slice(), act = 0, t = T.salida; const orden = [];
+        while (resto.length) {
+          const info = resto.map(p => { const ll = t + T.M[act][p.ix]; return { p, ll, antes: p.vd != null && ll < p.vd, tarde: p.vh != null && ll > p.vh }; });
+          const ok = info.filter(x => !x.antes && !x.tarde), antes = info.filter(x => x.antes);
+          const cerca = (a, b) => D[act][a.p.ix] - D[act][b.p.ix];
+          let pick;
+          if (ok.length) pick = ok.slice().sort((a, b) => (edd ? (a.p.vh ?? 1e9) - (b.p.vh ?? 1e9) : 0) || cerca(a, b))[0];
+          else if (antes.length) pick = antes.slice().sort((a, b) => (a.p.vd - a.ll) - (b.p.vd - b.ll))[0];
+          else pick = info.slice().sort(cerca)[0];
+          orden.push(pick.p); t = Math.max(pick.ll, pick.p.vd ?? 0) + T.serv(pick.p.kg); act = pick.p.ix;
+          resto = resto.filter(p => p !== pick.p);
         }
-        const libres = camiones.slice().sort((a, b) => a.cap - b.cap), rutas = [];
-        for (const g of grupos.sort((a, b) => sumKg(b) - sumKg(a))) {
-          const cam = libres.find(c => c.cap >= sumKg(g)); libres.splice(libres.indexOf(cam), 1);
+        return orden;
+      }
+      function simular(orden, D, T) {
+        let act = 0, t = T.salida, acum = 0, espera = 0; const ps = [];
+        for (const p of orden) {
+          const tramo = D[act][p.ix]; acum += tramo;
+          let ll = t + T.M[act][p.ix];
+          if (p.vd != null && ll < p.vd) { espera += p.vd - ll; ll = p.vd; }
+          const fuera = p.vh != null && ll > p.vh;
+          ps.push({ ...p, tramo, acum, llegada: ll, fuera });
+          t = ll + T.serv(p.kg); act = p.ix;
+        }
+        return { ps, acum, espera, vuelta: D[act][0], fin: t + T.M[act][0], nFuera: ps.filter(x => x.fuera).length };
+      }
+      function armar(cam, g, D, T) {
+        const kg = sumKg(g);
+        if (!T) {
           let resto = g.slice(), act = 0, acum = 0; const ps = [];
           while (resto.length) {
             const sig = resto.reduce((m, p) => D[act][p.ix] < D[act][m.ix] ? p : m); resto = resto.filter(p => p !== sig);
             const t = D[act][sig.ix]; acum += t; ps.push({ ...sig, tramo: t, acum }); act = sig.ix;
           }
           const vuelta = D[act][0];
-          rutas.push({ cam, paradas: ps, kg: sumKg(g), vuelta, km: acum + vuelta });
+          return { cam, paradas: ps, kg, vuelta, km: acum + vuelta, nFuera: 0 };
         }
-        const maxCap = Math.max(...camiones.map(c => c.cap));
-        const sin = pend.map(p => ({ ...p, motivo: p.kg > maxCap ? "Pedido más pesado que cualquier camión" : "Sin capacidad de flota (1 viaje por camión)" }));
-        return { rutas, sin };
+        const sims = [false, true].map(edd => simular(ordenVentanas(g, D, T, edd), D, T))
+          .sort((a, b) => a.nFuera - b.nFuera || a.espera - b.espera || a.acum - b.acum);
+        const s = sims[0];
+        return { cam, paradas: s.ps, kg, vuelta: s.vuelta, km: s.acum + s.vuelta, fin: s.fin, salida: T.salida, nFuera: s.nFuera };
+      }
+      // Si una parada no llega a tiempo, se prueba pasarla a otro camión (o a uno que esté libre del mismo día).
+      function reparar(rutas, libres, D, T) {
+        let cambio = true, guard = 0;
+        while (cambio && guard++ < 60) {
+          cambio = false;
+          buscar: for (const r of rutas) for (const p of r.paradas.filter(x => x.fuera)) {
+            const resto = r.paradas.filter(q => q.id !== p.id);
+            const rNuevo = resto.length ? armar(r.cam, resto, D, T) : null;
+            let mejor = null;
+            const cand = [...rutas.filter(x => x !== r), ...libres.map(c => ({ cam: c, paradas: [], kg: 0, nFuera: 0, libre: true }))];
+            for (const r2 of cand) {
+              if (r2.kg + p.kg > r2.cam.cap) continue;
+              const n2 = armar(r2.cam, [...r2.paradas, p], D, T);
+              if (T.jornada && n2.fin - T.salida > T.jornada) continue;
+              const antes = r.nFuera + r2.nFuera, desp = (rNuevo ? rNuevo.nFuera : 0) + n2.nFuera;
+              if (desp < antes && (!mejor || desp < mejor.desp || (desp === mejor.desp && n2.km - r2.km < mejor.n2.km - mejor.r2.km))) mejor = { r2, n2, desp };
+            }
+            if (!mejor) continue;
+            const ir = rutas.indexOf(r);
+            if (rNuevo) rutas[ir] = rNuevo; else { rutas.splice(ir, 1); libres.push(r.cam); }
+            if (mejor.r2.libre) { libres.splice(libres.indexOf(mejor.r2.cam), 1); rutas.push(mejor.n2); }
+            else rutas[rutas.indexOf(mejor.r2)] = mejor.n2;
+            cambio = true; break buscar;
+          }
+        }
+      }
+      // D = matriz de km (índice 0 = sucursal; cada parada trae su índice "ix").
+      // Llena camiones (de mayor a menor) con clientes cercanos entre sí sin pasar la capacidad
+      // asigna cada grupo al camión más chico donde entra y ordena por vecino más cercano.
+      // Con T: además ningún camión pasa la jornada máxima (T.jornada, minutos de salida a regreso,
+      // incluye descargas); se llenan primero todos los camiones del día y lo que sobra pasa al
+      // día siguiente (hasta T.maxDias). También ordena para respetar ventanas y reasigna si hace falta.
+      function planificar(paradas, camiones, D, T) {
+        const jorn = T && T.jornada ? T.jornada : Infinity, maxCap = Math.max(...camiones.map(c => c.cap));
+        const cabe = (cam, g) => !T || armar(cam, g, D, T).fin - T.salida <= jorn;
+        let pend = paradas.slice(); const sin = [], rutas = [];
+        if (T) pend = pend.filter(p => {
+          if (armar(camiones[0], [p], D, T).fin - T.salida <= jorn) return true;
+          sin.push({ ...p, motivo: `Un solo viaje a este cliente (ida, descarga y vuelta) supera la jornada de ${Math.round(jorn / 60)} h` }); return false;
+        });
+        const maxDias = T ? (T.maxDias || 10) : 1;
+        for (let dia = 1; dia <= maxDias && pend.length; dia++) {
+          const grupos = [];
+          for (const cam of camiones.slice().sort((a, b) => b.cap - a.cap)) {
+            if (!pend.length) break;
+            let libre = cam.cap, c = pend.filter(p => p.kg <= libre);
+            if (!c.length) continue;
+            const sem = c.reduce((m, p) => D[0][p.ix] > D[0][m.ix] ? p : m);
+            const g = [sem]; pend = pend.filter(p => p !== sem); libre -= sem.kg;
+            for (; ;) {
+              c = pend.filter(p => p.kg <= libre); if (!c.length) break;
+              const prom = x => g.reduce((s, q) => s + D[q.ix][x.ix], 0) / g.length;
+              const sig = c.slice().sort((a, b) => prom(a) - prom(b)).find(p => cabe(cam, [...g, p]));
+              if (!sig) break;
+              g.push(sig); pend = pend.filter(p => p !== sig); libre -= sig.kg;
+            }
+            grupos.push(g);
+          }
+          if (!grupos.length) break;
+          const libres = camiones.slice().sort((a, b) => a.cap - b.cap), delDia = [];
+          for (const g of grupos.sort((a, b) => sumKg(b) - sumKg(a))) {
+            const cam = libres.find(c => c.cap >= sumKg(g)); libres.splice(libres.indexOf(cam), 1);
+            delDia.push(armar(cam, g, D, T));
+          }
+          if (T) reparar(delDia, libres, D, T);
+          delDia.forEach(r => { r.dia = dia; rutas.push(r); });
+        }
+        pend.forEach(p => sin.push({ ...p, motivo: p.kg > maxCap ? "Pedido más pesado que cualquier camión" : (T ? `No entra en ${maxDias} días de flota` : "Sin capacidad de flota (1 viaje por camión)") }));
+        return { rutas, sin, dias: rutas.reduce((m, r) => Math.max(m, r.dia), 0) };
       }
       /*FIN*/
 
       const fmtMin = m => `${Math.floor(m / 60)} h ${pad(Math.round(m % 60))} min`;
+      // ── Parámetros de horarios (ajustables) ──
+      const HORA_SALIDA_MIN = 8 * 60;      // el camión sale de la sucursal a las 08:00
+      const JORNADA_MAX_MIN = 8 * 60;      // jornada máxima por conductor: de la salida al regreso (incluye descargas)
+      const MAX_DIAS = 10;                 // tope de días que se planifican hacia adelante
+      const FACTOR_MANEJO = 1.15;          // OSRM usa perfil auto: se suma 15 % al tiempo de manejo
+      const VEL_RECTA_KMH = 40;            // velocidad supuesta si no hay tiempos de OSRM
+      const servicioMin = kg => Math.min(90, 15 + 0.07 * kg);   // descarga: 15 min + 0,07 min por kg (máx. 90)
+      const fmtHora = m => `${pad(Math.floor(m / 60) % 24)}:${pad(Math.round(m % 60) % 60)}`;
+      const aMin = t => { const m = String(t == null ? "" : t).trim().match(/^(\d{1,2})[:.hH](\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : null; };
+      const txtVentana = p => p.vd != null && p.vh != null ? `${fmtHora(p.vd)} – ${fmtHora(p.vh)}` : p.vd != null ? `desde ${fmtHora(p.vd)}` : p.vh != null ? `hasta ${fmtHora(p.vh)}` : "";
       // Pedido al servidor local (app_visor.py), que consulta OSRM y cachea.
       async function osrm(servicio, body) {
         const r = await fetch("/api/osrm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ servicio, ...body }) });
@@ -4028,7 +4128,7 @@
       }
       // Matriz de km por calles entre todos los puntos, en bloques (el servidor público admite ~100 puntos por pedido).
       async function matriz(co) {
-        const n = co.length, B = 45, D = Array.from({ length: n }, () => Array(n).fill(0)); let nulos = 0;
+        const n = co.length, B = 45, D = Array.from({ length: n }, () => Array(n).fill(0)), Tm = Array.from({ length: n }, () => Array(n).fill(0)); let nulos = 0;
         for (let i = 0; i < n; i += B) for (let j = 0; j < n; j += B) {
           const fi = [], fj = [];
           for (let k = i; k < Math.min(i + B, n); k++) fi.push(k);
@@ -4038,9 +4138,12 @@
           fi.forEach((a, r) => fj.forEach((b, c) => {
             const v = res.distances[r][c];
             if (v == null) { nulos++; D[a][b] = dist(co[a], co[b]); } else D[a][b] = v / 1000;
+            const dv = res.durations && res.durations[r] ? res.durations[r][c] : null;
+            Tm[a][b] = dv == null ? D[a][b] / VEL_RECTA_KMH * 60 : dv / 60;
           }));
         }
         if (nulos) D.nulos = nulos;
+        D.t = Tm;
         return D;
       }
 
@@ -4061,6 +4164,20 @@
           if (!R.flota.length) throw new Error("flota.csv está vacío: cargá patentes, sucursal y tipo");
           estado(true, `Flota: ${R.flota.length} camiones · ${tipos.size} tipos`);
         } catch (e) { R.flota = null; estado(false, e.message); }
+      }
+
+      // Ventanas de entrega (opcional): ventanas_horarias.csv con id_cliente;desde;hasta (HH:MM).
+      async function cargarVentanas() {
+        R.ventanas = null;
+        try {
+          const r = await fetch("/api/horarios"); if (!r.ok) return;
+          const m = new Map();
+          parsear(await r.text()).forEach(f => {
+            const id = String(val(f, "id_cliente")).trim(), vd = aMin(val(f, "desde")), vh = aMin(val(f, "hasta"));
+            if (id && (vd != null || vh != null)) m.set(id, { vd, vh });
+          });
+          R.ventanas = m;
+        } catch (e) { }
       }
 
       function llenarSelectores() {
@@ -4098,10 +4215,14 @@
           const id = String(r.id_cliente).trim(); const p = por.get(id) || { id, nombre: r.Cliente || "", kg: 0, fact: [] };
           p.kg += logParseNumber(r.KGTotal); p.fact.push(r.Factura); por.set(id, p);
         });
+        await cargarVentanas();
         const paradas = [];
         por.forEach(p => {
           const g = geo.get(p.id);
-          if (!g) sinGeo++; else if (!mismaSuc(g.suc, suc.sucursal)) otra++; else paradas.push({ ...p, co: g.co });
+          if (!g) sinGeo++; else if (!mismaSuc(g.suc, suc.sucursal)) otra++; else {
+            const v = R.ventanas && R.ventanas.get(p.id);
+            paradas.push({ ...p, co: g.co, vd: v ? v.vd : null, vh: v ? v.vh : null });
+          }
         });
         if (otra) avisos.push(`${otra} cliente(s) del día pertenecen a otra sucursal y se omitieron.`);
         if (sinGeo) avisos.push(`${sinGeo} cliente(s) del día no están en el archivo de clientes: revisar.`);
@@ -4114,50 +4235,64 @@
           D = await matriz(pts);
           if (D.nulos) avisos.push(`${D.nulos} tramo(s) sin ruta en OSRM: se usó línea recta para ellos.`);
         } catch (e) {
-          modo = "recta"; D = pts.map(a => pts.map(b => dist(a, b)));
+          modo = "recta"; D = pts.map(a => pts.map(b => dist(a, b))); D.t = D.map(f => f.map(k => k / VEL_RECTA_KMH * 60));
           avisos.push(`<b>OSRM no disponible</b> (${e.message}): se usó distancia en línea recta.`);
         }
-        const plan = planificar(paradas, camiones, D);
+        const T = { M: D.t.map(f => f.map(x => x * FACTOR_MANEJO)), salida: HORA_SALIDA_MIN, serv: servicioMin, jornada: JORNADA_MAX_MIN, maxDias: MAX_DIAS };
+        const plan = planificar(paradas, camiones, D, T);
         if (modo === "osrm") for (const r of plan.rutas) {
           try {
             const q = await osrm("route", { coords: [depot, ...r.paradas.map(p => p.co), depot] }), rt = q.routes[0];
-            r.geo = rt.geometry.coordinates.map(c => [c[1], c[0]]); r.min = rt.duration / 60;
+            r.geo = rt.geometry.coordinates.map(c => [c[1], c[0]]); r.min = rt.duration / 60 * FACTOR_MANEJO;
           } catch (e) { avisos.push(`Ruta de ${r.cam.patente}: no se pudo trazar por calles (${e.message}).`); }
         }
         $("rutas-btn-generar").disabled = false;
         plan.rutas.forEach(r => { if (r.cam.aut > 0 && r.km > r.cam.aut) avisos.push(`${r.cam.patente}: la ruta (${f1(r.km)} km) supera su autonomía estimada.`); });
         if (plan.sin.length) avisos.push(`<b>${plan.sin.length} cliente(s) sin asignar:</b> ` + plan.sin.map(p => `${p.nombre || p.id} (${f1(p.kg)} kg — ${p.motivo})`).join("; "));
-        avisos.push((modo === "osrm" ? "Km por calles (OSRM, perfil auto: no distingue camiones)" : "Km en línea recta") + ", sin horarios de clientes ni restricciones por zona (V1).");
+        if (plan.dias > 1) {
+          const det = []; for (let d = 1; d <= plan.dias; d++) { const rd = plan.rutas.filter(r => r.dia === d); det.push(`día ${d}: ${rd.length} camión(es), ${rd.reduce((n, r) => n + r.paradas.length, 0)} cliente(s)`); }
+          avisos.push(`<b>Esta entrega no entra en un solo día (jornada máx. ${JORNADA_MAX_MIN / 60} h por camión): se necesitan ${plan.dias} días.</b> Se llenan primero todos los camiones disponibles del día → ${det.join(" · ")}.`);
+        }
+        plan.rutas.forEach(r => r.paradas.filter(p => p.fuera).forEach(p => avisos.push(`<b>⚠ IMPOSIBLE llegar en horario:</b> ${p.nombre || p.id} (${r.cam.patente}, parada ${r.paradas.indexOf(p) + 1}) llegaría a las ${fmtHora(p.llegada)} y su ventana es ${txtVentana(p)}.`)));
+        avisos.push((modo === "osrm" ? "Km por calles (OSRM, perfil auto: no distingue camiones)" : "Km en línea recta") + `. Horarios estimados: salida ${fmtHora(HORA_SALIDA_MIN)}, manejo +${Math.round((FACTOR_MANEJO - 1) * 100)} %, descarga según kg (15 min + 0,07 min/kg), jornada máx. ${JORNADA_MAX_MIN / 60} h (incluye descargas), sin paradas de combustible ni almuerzo.`);
+        avisos.push(R.ventanas ? `Ventanas de entrega cargadas para ${paradas.filter(p => p.vd != null || p.vh != null).length} de ${paradas.length} cliente(s) del día.` : "No se encontró ventanas_horarias.csv: no se consideran horarios de clientes (solo hora estimada de llegada).");
         R.hoja = { suc, fecha, depot, modo, ...plan, flotaTotal: camiones.length };
+        R.diaVista = 0;
+        const sd = $("rutas-dia"); sd.innerHTML = `<option value="0">Todos los días</option>` + Array.from({ length: plan.dias }, (_, k) => `<option value="${k + 1}">Día ${k + 1}</option>`).join("");
+        sd.value = "0"; sd.style.display = plan.dias > 1 ? "" : "none";
         banner(avisos); render();
       }
 
       function render() {
-        const h = R.hoja, rs = h.rutas;
+        const h = R.hoja, todas = h.rutas, rs = R.diaVista ? todas.filter(r => r.dia === R.diaVista) : todas;
         $("rutas-empty").style.display = "none"; $("rutas-kpis").style.display = ""; $("rutas-toggle").style.display = ""; $("rutas-export").style.display = "";
-        $("rk-camiones").textContent = `${rs.length}/${h.flotaTotal}`;
-        $("rk-clientes").textContent = rs.reduce((s, r) => s + r.paradas.length, 0);
+        $("rk-camiones").textContent = `${new Set(todas.map(r => r.cam.patente)).size}/${h.flotaTotal}`;
+        $("rk-dias").textContent = h.dias || 0;
+        $("rk-clientes").textContent = todas.reduce((s, r) => s + r.paradas.length, 0);
         $("rk-sin").textContent = h.sin.length;
         $("rk-km-label").textContent = h.modo === "osrm" ? "Km por calles (OSRM)" : "Km (línea recta)";
-        $("rk-km").textContent = f1(rs.reduce((s, r) => s + r.km, 0));
-        $("rk-kg").textContent = f1(rs.reduce((s, r) => s + r.kg, 0));
+        $("rk-km").textContent = f1(todas.reduce((s, r) => s + r.km, 0));
+        $("rk-kg").textContent = f1(todas.reduce((s, r) => s + r.kg, 0));
         let t = "";
-        rs.forEach((r, i) => {
-          t += `<tr><td colspan="6" style="background:var(--c-bg);font-weight:600"><span style="color:${COLORES[i % 8]}">●</span> ${r.cam.patente} · ${r.cam.tipo} · ${f1(r.kg)} / ${f1(r.cam.cap)} kg (${Math.round(100 * r.kg / r.cam.cap)}%) · ${f1(r.km)} km${r.min ? " · " + fmtMin(r.min) + " de manejo" : ""}</td></tr>`;
-          r.paradas.forEach((p, j) => { t += `<tr><td>${j + 1}</td><td>${p.id}</td><td>${p.nombre}</td><td>${f1(p.kg)}</td><td>${f1(p.tramo)}</td><td>${f1(p.acum)}</td></tr>`; });
-          t += `<tr><td></td><td colspan="3">Vuelta a sucursal</td><td>${f1(r.vuelta)}</td><td>${f1(r.km)}</td></tr>`;
+        todas.forEach((r, i) => {
+          if (R.diaVista && r.dia !== R.diaVista) return;
+          if (h.dias > 1 && (i === 0 || todas[i - 1].dia !== r.dia)) t += `<tr><td colspan="8" style="background:#1a1c1e;color:#fff;font-weight:700">DÍA ${r.dia}</td></tr>`;
+          t += `<tr><td colspan="8" style="background:var(--c-bg);font-weight:600"><span style="color:${COLORES[i % 8]}">●</span> ${r.cam.patente} · ${r.cam.tipo} · ${f1(r.kg)} / ${f1(r.cam.cap)} kg (${Math.round(100 * r.kg / r.cam.cap)}%) · ${f1(r.km)} km${r.min ? " · " + fmtMin(r.min) + " de manejo" : ""} · sale ${fmtHora(r.salida)} · regresa ${fmtHora(r.fin)}</td></tr>`;
+          r.paradas.forEach((p, j) => { t += `<tr${p.fuera ? ' style="color:#dc2626"' : ""}><td>${j + 1}</td><td>${p.id}</td><td>${p.nombre}</td><td>${f1(p.kg)}</td><td>${f1(p.tramo)}</td><td>${f1(p.acum)}</td><td>${fmtHora(p.llegada)}${p.fuera ? " ⚠" : ""}</td><td>${txtVentana(p) || "—"}</td></tr>`; });
+          t += `<tr><td></td><td colspan="3">Vuelta a sucursal</td><td>${f1(r.vuelta)}</td><td>${f1(r.km)}</td><td>${fmtHora(r.fin)}</td><td></td></tr>`;
         });
         $("rutas-tbody").innerHTML = t;
         initMap(); R.capa.clearLayers();
         const pts = [h.depot];
         L.circleMarker(h.depot, { radius: 9, color: "#1a1c1e", fillColor: "#fff", fillOpacity: 1, weight: 3 }).bindPopup("<b>" + h.suc.sucursal + "</b>").addTo(R.capa);
-        rs.forEach((r, i) => {
+        todas.forEach((r, i) => {
+          if (R.diaVista && r.dia !== R.diaVista) return;
           const c = COLORES[i % 8], linea = [h.depot, ...r.paradas.map(p => p.co), h.depot];
           L.polyline(r.geo || linea, { color: c, weight: 3, opacity: .8 }).addTo(R.capa);
           r.paradas.forEach((p, j) => {
             pts.push(p.co);
             L.marker(p.co, { icon: L.divIcon({ className: "", html: `<div class="ruta-pin" style="background:${c}">${j + 1}</div>`, iconSize: [22, 22] }) })
-              .bindPopup(`<b>${p.nombre || p.id}</b><br>${r.cam.patente} · parada ${j + 1}<br>${f1(p.kg)} kg · +${f1(p.tramo)} km`).addTo(R.capa);
+              .bindPopup(`<b>${p.nombre || p.id}</b><br>${r.cam.patente} · parada ${j + 1}${h.dias > 1 ? ` · día ${r.dia}` : ""}<br><b>${[...new Set(p.fact.map(x => String(x || "").trim()).filter(Boolean))].length > 1 ? "Facturas a entregar" : "Factura a entregar"}:</b> ${[...new Set(p.fact.map(x => String(x || "").trim()).filter(Boolean))].join(", ") || "—"}${txtVentana(p) ? `<br><b>Horario de entrega:</b> ${txtVentana(p)}` : ""}${p.fuera ? '<br><span style="color:#dc2626"><b>⚠ No se llega dentro del horario</b></span>' : ""}<br>${f1(p.kg)} kg · +${f1(p.tramo)} km`, { maxWidth: 300 }).addTo(R.capa);
           });
         });
         setTimeout(() => { R.map.invalidateSize(); R.map.fitBounds(pts, { padding: [40, 40] }); }, 60);
@@ -4179,10 +4314,10 @@
       function descargar() {
         const h = R.hoja; if (!h) return;
         const n = x => String(Math.round(x * 100) / 100).replace(".", ",");
-        const f = [["fecha", "sucursal", "patente", "tipo", "capacidad_kg", "orden", "id_cliente", "cliente", "facturas", "kg", "km_tramo", "km_acumulado"]];
+        const f = [["fecha", "sucursal", "patente", "dia", "orden", "id_cliente", "cliente", "facturas", "kg", "km_tramo", "km_acumulado", "hora_llegada_estimada", "ventana_desde", "ventana_hasta", "alerta"]];
         h.rutas.forEach(r => {
-          r.paradas.forEach((p, j) => f.push([h.fecha, h.suc.sucursal, r.cam.patente, r.cam.tipo, r.cam.cap, j + 1, p.id, p.nombre, p.fact.join(" "), n(p.kg), n(p.tramo), n(p.acum)]));
-          f.push([h.fecha, h.suc.sucursal, r.cam.patente, r.cam.tipo, r.cam.cap, "VUELTA", "", "SUCURSAL", "", "", n(r.vuelta), n(r.km)]);
+          r.paradas.forEach((p, j) => f.push([h.fecha, h.suc.sucursal, r.cam.patente, r.dia, j + 1, p.id, p.nombre, p.fact.join(" "), n(p.kg), n(p.tramo), n(p.acum), fmtHora(p.llegada), p.vd != null ? fmtHora(p.vd) : "", p.vh != null ? fmtHora(p.vh) : "", p.fuera ? "FUERA DE HORARIO" : ""]));
+          f.push([h.fecha, h.suc.sucursal, r.cam.patente, r.dia, "VUELTA", "", "SUCURSAL", "", "", n(r.vuelta), n(r.km), fmtHora(r.fin), "", "", ""]);
         });
         const csv = "\uFEFF" + f.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
         const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -4195,6 +4330,7 @@
       });
       $("rutas-btn-generar").addEventListener("click", generar);
       $("rutas-btn-csv").addEventListener("click", descargar);
+      $("rutas-dia").addEventListener("change", e => { R.diaVista = +e.target.value; render(); });
       $("rutas-btn-mapa").addEventListener("click", () => vista("mapa"));
       $("rutas-btn-tabla").addEventListener("click", () => vista("tabla"));
       window.__rutasPlanificar = planificar;
