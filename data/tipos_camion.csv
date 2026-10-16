@@ -1,0 +1,8 @@
+﻿tipo;descripcion;capacidad_min_kg;capacidad_max_kg;capacidad_planificacion_kg;tanque_litros;consumo_l_100km;autonomia_km;acceso_centro_ciudad;fuente_y_estado
+Z1;Camión mediano 8.000-14.000 kg;8000;14000;8000;210;22;955;PENDIENTE;Tanque: Atego 1726 = 210 L y Atego 1725 = 300 L (fichas publicadas). Consumo: Atego chicos miden 16-19 L/100km, se extrapola a carga alta. VALIDAR
+Z2;Camión liviano 2.500-4.500 kg;2500;4500;2500;100;12;833;PENDIENTE;Tanque: Iveco Daily 35-150 y 55-170 = 100 L (Autocosmos). Consumo: Daily 8-11 km/L (fichacompleta.com.br). VALIDAR
+Z3;Camión 5.000-8.000 kg;5000;8000;5000;100;18;556;PENDIENTE;"Tanque: sin ficha directa; se toma el mínimo de la gama Daily/Atego chico (100-210 L). Consumo: Atego 8 t mide 16-19 L/100km. ESTIMADO, VALIDAR"
+Z4;Semi 19.000 kg;19000;19000;19000;600;30;2000;NO;Tanque: Iveco Stralis 600 L, Scania 400-1100 L. Consumo: Scania R450 y Stralis miden 25-35 L/100km con semirremolque. Acceso a centro: confirmado por Paladini
+Z5;Utilitario 1.300-2.200 kg;1300;2200;1300;65;12;542;PENDIENTE;Tanque: Iveco Daily 30-130 = 65 L. Consumo: 7,9-8,5 km/L (fichacompleta.com.br). VALIDAR
+Z6;Utilitario 450-500 kg;450;500;450;50;8;625;PENDIENTE;Tanque: NO VERIFICADO (estimación tipo Kangoo/Partner). Consumo: Kangoo Express 7,3-8,6 L/100km en ruta (Autocosmos). VALIDAR
+Z7;Camión pesado desde 25.000 kg;25000;25000;25000;600;33;1818;PENDIENTE;Tanque: tractor 400-1100 L, se toma 600. Consumo: 27-35 L/100km con semirremolque. Máximo de carga sin dato: VALIDAR

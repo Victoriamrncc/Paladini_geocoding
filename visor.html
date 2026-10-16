@@ -455,7 +455,8 @@
 
     /* map */
     #map,
-    #map-logistica {
+    #map-logistica,
+    #map-rutas {
       flex: 1;
       z-index: 1;
     }
@@ -1313,6 +1314,80 @@
       color: var(--c-error);
       margin-top: 6px;
     }
+
+    .config-field-row {
+      flex-wrap: wrap;
+    }
+
+    .config-field-row input[type="text"] {
+      flex: 1 1 100%;
+    }
+
+    .sucursal-config-btn {
+      margin-top: 10px;
+      background: var(--c-text);
+      color: #fff;
+      border: 1px solid var(--c-text);
+      border-radius: var(--r-sm);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .config-field-row button.config-elegir {
+      background: var(--c-text);
+      color: #fff;
+      border-color: var(--c-text);
+    }
+
+    .config-field-row button.config-elegir:hover {
+      background: var(--c-accent-dk);
+      border-color: var(--c-accent-dk);
+    }
+
+    .config-field-row button:disabled {
+      opacity: .55;
+      cursor: default;
+    }
+
+    .config-field-carpeta {
+      background: var(--c-bg);
+    }
+
+    .config-field.destacado {
+      border-color: var(--c-text);
+      box-shadow: 0 0 0 3px rgba(26, 28, 30, .06);
+    }
+
+    .config-field-note {
+      font-size: 11px;
+      color: var(--c-muted);
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+
+    .config-modal-aviso {
+      font-size: 11.5px;
+      color: var(--c-warning);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .ruta-pin {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff;
+      box-shadow: var(--shadow-sm);
+    }
   </style>
 </head>
 
@@ -1338,11 +1413,12 @@
     <nav class="tab-nav">
       <button class="tab-btn active" id="tab-btn-visor" type="button">Visor de Direcciones</button>
       <button class="tab-btn" id="tab-btn-logistica" type="button">Logística</button>
+      <button class="tab-btn" id="tab-btn-rutas" type="button">Hoja de ruta</button>
     </nav>
     <button class="btn-config" id="btn-abrir-config" type="button">⚙ Configuración</button>
   </header>
 
-  <!-- ── Configuración de ubicación de archivos (clientes / seguimiento) ── -->
+  <!-- ── Configuración de ubicación de archivos de datos ── -->
   <div class="config-overlay hidden" id="config-overlay">
     <div class="config-modal">
       <div class="config-modal-head">
@@ -1350,10 +1426,35 @@
         <button class="config-close-btn" id="config-close-btn" type="button" aria-label="Cerrar">✕</button>
       </div>
       <p class="config-modal-hint">
-        Por defecto el visor busca estos archivos donde están configurados en
-        <code>app_visor.py</code>. Si en tu máquina están en otro lado, indicá acá la
-        ruta completa del archivo.
+        El visor lee estos archivos directamente del disco, por eso necesita saber
+        dónde están. Lo más cómodo es apretar <b>Elegir…</b> y buscarlos con el
+        explorador de Windows; si preferís, también podés pegar la ruta a mano.
       </p>
+
+      <div class="config-modal-aviso" id="config-aviso-dialogo" style="display:none"></div>
+
+      <div class="config-field config-field-carpeta" data-clave="carpeta_datos">
+        <div class="config-field-title">Carpeta de datos</div>
+        <div class="config-field-status">
+          <span class="dot"></span>
+          <span class="config-field-status-text">Verificando…</span>
+        </div>
+        <div class="config-field-row">
+          <input type="text" placeholder="Carpeta donde están los archivos de datos" />
+          <button type="button" class="config-elegir" data-accion="elegir">Elegir carpeta…</button>
+          <button type="button" data-accion="guardar">Guardar</button>
+        </div>
+        <div class="config-field-actions">
+          <button class="config-field-reset" type="button" data-accion="restablecer" disabled>
+            Restablecer a valor por defecto
+          </button>
+        </div>
+        <div class="config-field-note">
+          Los tres archivos de abajo se buscan acá por su nombre, salvo que le
+          indiques uno puntual. Con elegir la carpeta una vez suele alcanzar.
+        </div>
+        <div class="config-field-error"></div>
+      </div>
 
       <div class="config-field" data-clave="clientes">
         <div class="config-field-title">Clientes (geolocalización)</div>
@@ -1362,7 +1463,8 @@
           <span class="config-field-status-text">Verificando…</span>
         </div>
         <div class="config-field-row">
-          <input type="text" placeholder="Ruta completa al CSV de clientes" />
+          <input type="text" placeholder="Ruta completa al archivo de clientes" />
+          <button type="button" class="config-elegir" data-accion="elegir">Elegir archivo…</button>
           <button type="button" data-accion="guardar">Guardar</button>
         </div>
         <div class="config-field-actions">
@@ -1381,6 +1483,27 @@
         </div>
         <div class="config-field-row">
           <input type="text" placeholder="Ruta completa al archivo de seguimiento" />
+          <button type="button" class="config-elegir" data-accion="elegir">Elegir archivo…</button>
+          <button type="button" data-accion="guardar">Guardar</button>
+        </div>
+        <div class="config-field-actions">
+          <button class="config-field-reset" type="button" data-accion="restablecer" disabled>
+            Restablecer a valor por defecto
+          </button>
+        </div>
+        <div class="config-field-note">Es el que se relee cada 10 minutos para actualizar las entregas.</div>
+        <div class="config-field-error"></div>
+      </div>
+
+      <div class="config-field" data-clave="sucursales">
+        <div class="config-field-title">Sucursales</div>
+        <div class="config-field-status">
+          <span class="dot"></span>
+          <span class="config-field-status-text">Verificando…</span>
+        </div>
+        <div class="config-field-row">
+          <input type="text" placeholder="Ruta completa al archivo de sucursales" />
+          <button type="button" class="config-elegir" data-accion="elegir">Elegir archivo…</button>
           <button type="button" data-accion="guardar">Guardar</button>
         </div>
         <div class="config-field-actions">
@@ -1552,6 +1675,14 @@
               <div class="filter-label">Hoja de ruta</div>
               <div id="log-filter-hojaruta"></div>
             </div>
+            <div class="filter-block" id="log-filter-patente-block" style="display:none">
+              <div class="filter-label">Patente</div>
+              <div id="log-filter-patente"></div>
+            </div>
+            <div class="filter-block" id="log-filter-cliente-block" style="display:none">
+              <div class="filter-label">Cliente</div>
+              <div id="log-filter-cliente"></div>
+            </div>
           </div>
         </div>
 
@@ -1632,8 +1763,8 @@
         <!-- Sin coincidencias (hay datos, pero los filtros elegidos no matchean nada) -->
         <div class="empty-state" id="log-nomatch-state" style="display:none">
           <div class="es-icon"></div>
-          <p>No hay coincidencias para el filtro elegido.<br>Probá destildar alguna opción en Estado, Sucursal asignada
-            o Hoja de ruta.</p>
+          <p>No hay coincidencias para el filtro elegido.<br>Probá destildar alguna opción en Estado, Sucursal asignada,
+            Hoja de ruta, Patente o Cliente.</p>
         </div>
       </div>
 
@@ -1658,6 +1789,91 @@
         </div>
       </div>
 
+    </main>
+  </div>
+
+  <!-- ── Hoja de ruta (pestaña nueva) ───────────────────────── -->
+  <div class="app-body app-view" id="view-rutas">
+    <aside>
+      <div class="sidebar-scroll">
+        <div>
+          <div class="section-label">Datos</div>
+          <div class="log-datos-status">
+            <div class="log-datos-row">
+              <span class="log-datos-dot" id="rutas-dot"></span><span id="rutas-datos-texto">Cargando flota…</span>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div>
+          <div class="section-label">Planificación</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="filter-block">
+              <div class="filter-label">Sucursal</div><select class="filter-select" id="rutas-sucursal"></select>
+            </div>
+            <div class="filter-block">
+              <div class="filter-label">Fecha</div><select class="filter-select" id="rutas-fecha"></select>
+            </div>
+            <button class="btn-primary" id="rutas-btn-generar" type="button">GENERAR HOJA DE RUTA</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div id="rutas-export" style="display:none">
+          <div class="section-label">Exportar</div>
+          <button class="btn-secondary" id="rutas-btn-csv" type="button">Descargar hoja de ruta (CSV)</button>
+        </div>
+      </div>
+    </aside>
+    <main>
+      <div class="log-warning-banner" id="rutas-banner"><span id="rutas-banner-text"></span></div>
+      <div class="kpi-log-bar" id="rutas-kpis" style="display:none">
+        <div class="kpi-card">
+          <div class="kpi-card-label">Camiones usados</div>
+          <div class="kpi-card-value" id="rk-camiones">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Clientes asignados</div>
+          <div class="kpi-card-value ok" id="rk-clientes">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Sin asignar</div>
+          <div class="kpi-card-value warn" id="rk-sin">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label" id="rk-km-label">Km</div>
+          <div class="kpi-card-value" id="rk-km">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Kg a entregar</div>
+          <div class="kpi-card-value" id="rk-kg">—</div>
+        </div>
+      </div>
+      <div class="log-view-toggle" id="rutas-toggle" style="display:none">
+        <button class="log-view-btn active" id="rutas-btn-mapa" type="button">Mapa</button>
+        <button class="log-view-btn" id="rutas-btn-tabla" type="button">Tabla</button>
+      </div>
+      <div id="rutas-map-view" style="display:flex;flex-direction:column;flex:1;position:relative;overflow:hidden;">
+        <div id="map-rutas"></div>
+        <div class="empty-state" id="rutas-empty">
+          <div class="es-icon"></div>
+          <p>Elegí sucursal y fecha y tocá GENERAR HOJA DE RUTA.</p>
+        </div>
+      </div>
+      <div class="log-table-view" id="rutas-table-view">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Orden</th>
+              <th>ID Cliente</th>
+              <th>Cliente</th>
+              <th>Kg</th>
+              <th>Km tramo</th>
+              <th>Km acum.</th>
+            </tr>
+          </thead>
+          <tbody id="rutas-tbody"></tbody>
+        </table>
+      </div>
     </main>
   </div>
 
@@ -2476,7 +2692,7 @@
       segRows: null,          // filas crudas del CSV de seguimiento
       segByCliente: null,     // Map id_cliente -> { pedidos:[...], estado, kgTotal, kgEntregado }
       merged: null,           // filas finales a graficar: { ...geoRow, estado, pedidos, kgTotal, kgEntregado }
-      selections: { estado: [], sucursal: [], hojaRuta: [] },
+      selections: { estado: [], sucursal: [], hojaRuta: [], patente: [], cliente: [] },
       markers: [],
       sucursales: null,       // filas de sucursales (capa independiente, no filtrable)
       sucursalMarkers: [],
@@ -2925,6 +3141,61 @@
       } else {
         hrBlock.style.display = "none";
       }
+
+      // Patente — mismo patrón que Hoja de ruta: todas tildadas por
+      // default, una patente nueva en un refresco automático aparece
+      // tildada sola.
+      const patentesPresentes = [...new Set(
+        (stateLog.segRows || []).map(r => (r.Patente || "").trim()).filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "es"));
+      const patBlock = document.getElementById("log-filter-patente-block");
+      const patContainer = document.getElementById("log-filter-patente");
+      patContainer.innerHTML = "";
+      if (patentesPresentes.length) {
+        patBlock.style.display = "block";
+        stateLog.selections._patenteFilterActive = true;
+        if (!stateLog.selections._patenteUnchecked) stateLog.selections._patenteUnchecked = new Set();
+        stateLog.selections.patente = patentesPresentes.filter(
+          p => !stateLog.selections._patenteUnchecked.has(p));
+        const msPatente = createMultiSelect(patentesPresentes, stateLog.selections.patente, (selected) => {
+          stateLog.selections.patente = selected;
+          stateLog.selections._patenteUnchecked = new Set(
+            patentesPresentes.filter(p => !selected.includes(p)));
+          logRenderMap();
+          logRenderTable();
+          logUpdateKPIs();
+        });
+        patContainer.appendChild(msPatente);
+      } else {
+        patBlock.style.display = "none";
+      }
+
+      // Cliente — mismo patrón que Hoja de ruta / Patente: todas tildadas
+      // por default, un cliente nuevo aparece tildado solo.
+      const clientesPresentes = [...new Set(
+        (stateLog.segRows || []).map(r => (r.Cliente || "").trim()).filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "es"));
+      const cliBlock = document.getElementById("log-filter-cliente-block");
+      const cliContainer = document.getElementById("log-filter-cliente");
+      cliContainer.innerHTML = "";
+      if (clientesPresentes.length) {
+        cliBlock.style.display = "block";
+        stateLog.selections._clienteFilterActive = true;
+        if (!stateLog.selections._clienteUnchecked) stateLog.selections._clienteUnchecked = new Set();
+        stateLog.selections.cliente = clientesPresentes.filter(
+          c => !stateLog.selections._clienteUnchecked.has(c));
+        const msCliente = createMultiSelect(clientesPresentes, stateLog.selections.cliente, (selected) => {
+          stateLog.selections.cliente = selected;
+          stateLog.selections._clienteUnchecked = new Set(
+            clientesPresentes.filter(c => !selected.includes(c)));
+          logRenderMap();
+          logRenderTable();
+          logUpdateKPIs();
+        });
+        cliContainer.appendChild(msCliente);
+      } else {
+        cliBlock.style.display = "none";
+      }
     }
 
     function logApplyFilters(rows) {
@@ -2939,6 +3210,16 @@
         if (stateLog.selections._hojaRutaFilterActive) {
           const hojasFila = (r.pedidos || []).map(p => (p.ID_HojaRuta || "").trim()).filter(Boolean);
           if (hojasFila.length && !hojasFila.some(h => stateLog.selections.hojaRuta.includes(h))) return false;
+        }
+
+        if (stateLog.selections._patenteFilterActive) {
+          const patentesFila = (r.pedidos || []).map(p => (p.Patente || "").trim()).filter(Boolean);
+          if (patentesFila.length && !patentesFila.some(p => stateLog.selections.patente.includes(p))) return false;
+        }
+
+        if (stateLog.selections._clienteFilterActive) {
+          const clientesFila = (r.pedidos || []).map(p => (p.Cliente || "").trim()).filter(Boolean);
+          if (clientesFila.length && !clientesFila.some(c => stateLog.selections.cliente.includes(c))) return false;
         }
 
         return true;
@@ -3317,6 +3598,7 @@
       document.getElementById("tab-btn-visor").classList.add("active");
       document.getElementById("tab-btn-logistica").classList.remove("active");
       document.getElementById("view-visor").classList.add("active");
+      document.getElementById("tab-btn-rutas").classList.remove("active"); document.getElementById("view-rutas").classList.remove("active");
       document.getElementById("view-logistica").classList.remove("active");
       setTimeout(() => state.map && state.map.invalidateSize(), 50);
     });
@@ -3325,6 +3607,7 @@
       document.getElementById("tab-btn-logistica").classList.add("active");
       document.getElementById("tab-btn-visor").classList.remove("active");
       document.getElementById("view-logistica").classList.add("active");
+      document.getElementById("tab-btn-rutas").classList.remove("active"); document.getElementById("view-rutas").classList.remove("active");
       document.getElementById("view-visor").classList.remove("active");
       logInitMap();
       setTimeout(() => stateLog.map && stateLog.map.invalidateSize(), 50);
@@ -3338,8 +3621,14 @@
     let sucursalVistaAplicada = false; // evita que el auto-refresco recentre el mapa después de la primera vez
 
     function mostrarErrorSucursales(msg) {
-      document.getElementById("sucursal-list").innerHTML =
-        `<div class="sucursal-error">${msg}</div>`;
+      const cont = document.getElementById("sucursal-list");
+      cont.innerHTML =
+        `<div class="sucursal-error">${msg}</div>` +
+        `<button class="sucursal-config-btn" type="button">Configurar archivos…</button>`;
+      // Este overlay tapa el header, así que sin este botón no habría forma de
+      // llegar a la configuración cuando el archivo de sucursales no se lee.
+      cont.querySelector(".sucursal-config-btn")
+        .addEventListener("click", () => abrirConfigModal("sucursales"));
     }
 
     function renderSucursalesModal(lista) {
@@ -3433,9 +3722,16 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // CONFIGURACIÓN DE ARCHIVOS (clientes / seguimiento)
+    // CONFIGURACIÓN DE ARCHIVOS (carpeta, clientes, seguimiento, sucursales)
     // ══════════════════════════════════════════════════════════════
-    const CONFIG_ETIQUETAS = { clientes: "clientes", seguimiento: "seguimiento" };
+    const CONFIG_CAMPOS = {
+      carpeta_datos: { etiqueta: "carpeta de datos", tipo: "carpeta" },
+      clientes: { etiqueta: "clientes", tipo: "archivo" },
+      seguimiento: { etiqueta: "seguimiento", tipo: "archivo" },
+      sucursales: { etiqueta: "sucursales", tipo: "archivo" },
+    };
+
+    const CONFIG_CLAVES = Object.keys(CONFIG_CAMPOS);
 
     function elementosCampoConfig(clave) {
       const campo = document.querySelector(`.config-field[data-clave="${clave}"]`);
@@ -3444,6 +3740,7 @@
         dot: campo.querySelector(".dot"),
         statusText: campo.querySelector(".config-field-status-text"),
         input: campo.querySelector('input[type="text"]'),
+        btnElegir: campo.querySelector('[data-accion="elegir"]'),
         btnGuardar: campo.querySelector('[data-accion="guardar"]'),
         btnRestablecer: campo.querySelector('[data-accion="restablecer"]'),
         errorBox: campo.querySelector(".config-field-error"),
@@ -3451,11 +3748,16 @@
     }
 
     function pintarEstadoCampoConfig(clave, info) {
+      if (!info) return;
       const el = elementosCampoConfig(clave);
+      const esCarpeta = CONFIG_CAMPOS[clave].tipo === "carpeta";
       el.dot.classList.remove("ok", "error");
       el.dot.classList.add(info.existe ? "ok" : "error");
-      const origenTxt = info.origen === "personalizada" ? "ruta personalizada" : "valor por defecto";
-      el.statusText.textContent = `${info.existe ? "Encontrado" : "No encontrado"} · usando ${origenTxt}`;
+      const origenTxt = info.origen === "personalizada" ? "elegida por vos" : "valor por defecto";
+      const encontrado = info.existe
+        ? (esCarpeta ? "Carpeta encontrada" : "Archivo encontrado")
+        : (esCarpeta ? "Carpeta no encontrada" : "Archivo no encontrado");
+      el.statusText.textContent = `${encontrado} · ${origenTxt} · ${info.ruta}`;
       el.input.value = info.ruta;
       el.input.placeholder = info.ruta_por_defecto;
       el.btnRestablecer.disabled = info.origen !== "personalizada";
@@ -3463,14 +3765,76 @@
       el.errorBox.textContent = "";
     }
 
+    // Pinta los cuatro campos de una: elegir la carpeta puede cambiar de dónde
+    // sale cada archivo, así que nunca se refresca uno solo.
+    function aplicarEstadoConfig(estado) {
+      if (!estado) return;
+      CONFIG_CLAVES.forEach(clave => pintarEstadoCampoConfig(clave, estado[clave]));
+      aplicarDisponibilidadDialogo(estado.dialogo_disponible !== false);
+    }
+
+    // Si el servidor no puede abrir el explorador (falta tkinter, o el visor se
+    // está usando desde otra PC), se esconden los botones y queda el campo de
+    // texto, que siempre funciona.
+    function aplicarDisponibilidadDialogo(disponible) {
+      document.querySelectorAll(".config-elegir").forEach(btn => {
+        btn.style.display = disponible ? "" : "none";
+      });
+      const aviso = document.getElementById("config-aviso-dialogo");
+      if (disponible) {
+        aviso.style.display = "none";
+        aviso.textContent = "";
+      } else {
+        aviso.style.display = "block";
+        aviso.textContent = "Esta máquina no puede abrir el explorador de archivos "
+          + "(o el visor se está usando desde otra computadora). Pegá las rutas a mano.";
+      }
+    }
+
     function cargarEstadoConfig() {
       return fetch("/api/config")
         .then(r => r.json())
-        .then(estado => {
-          Object.keys(CONFIG_ETIQUETAS).forEach(clave => pintarEstadoCampoConfig(clave, estado[clave]));
-          return estado;
-        })
+        .then(estado => { aplicarEstadoConfig(estado); return estado; })
         .catch(() => showToast("No se pudo consultar la configuración de rutas"));
+    }
+
+    // ── Elegir con el explorador nativo (lo abre app_visor.py) ──────────
+    // El fetch queda esperando mientras la ventana está abierta: por eso el
+    // botón se deshabilita y avisa que hay un diálogo esperando en pantalla.
+    function elegirRutaConfig(clave) {
+      const el = elementosCampoConfig(clave);
+      const textoOriginal = el.btnElegir.textContent;
+      el.btnElegir.disabled = true;
+      el.btnElegir.textContent = "Esperando…";
+      el.errorBox.textContent = "";
+      showToast("Se abrió la ventana para elegir. Si no la ves, buscala en la barra de tareas.");
+
+      fetch("/api/elegir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clave }),
+      })
+        .then(r => r.json().then(datos => ({ ok: r.ok, datos })))
+        .then(({ ok, datos }) => {
+          el.btnElegir.disabled = false;
+          el.btnElegir.textContent = textoOriginal;
+          if (!ok) {
+            el.errorBox.textContent =
+              (datos.errores && datos.errores[clave]) || datos.error || "No se pudo abrir el explorador.";
+            aplicarEstadoConfig(datos);
+            return;
+          }
+          aplicarEstadoConfig(datos);
+          if (datos.cancelado) return;
+          showToast(`Ruta de ${CONFIG_CAMPOS[clave].etiqueta} actualizada`);
+          reintentarCarga(clave);
+          cerrarConfigSiEsperaSucursal(clave);
+        })
+        .catch(() => {
+          el.btnElegir.disabled = false;
+          el.btnElegir.textContent = textoOriginal;
+          el.errorBox.textContent = "No se pudo conectar con el servidor.";
+        });
     }
 
     function guardarRutaConfig(clave) {
@@ -3492,12 +3856,13 @@
           el.btnGuardar.disabled = false;
           if (!ok) {
             el.input.classList.add("error");
-            el.errorBox.textContent = (datos.errores && datos.errores[clave]) || "No se pudo guardar la ruta.";
+            el.errorBox.textContent = (datos.errores && datos.errores[clave]) || datos.error || "No se pudo guardar la ruta.";
             return;
           }
-          pintarEstadoCampoConfig(clave, datos[clave]);
-          showToast(`Ruta de ${CONFIG_ETIQUETAS[clave]} actualizada`);
+          aplicarEstadoConfig(datos);
+          showToast(`Ruta de ${CONFIG_CAMPOS[clave].etiqueta} actualizada`);
           reintentarCarga(clave);
+          cerrarConfigSiEsperaSucursal(clave);
         })
         .catch(() => {
           el.btnGuardar.disabled = false;
@@ -3515,27 +3880,52 @@
       })
         .then(r => r.json())
         .then(datos => {
-          pintarEstadoCampoConfig(clave, datos[clave]);
-          showToast(`Ruta de ${CONFIG_ETIQUETAS[clave]} restablecida al valor por defecto`);
+          aplicarEstadoConfig(datos);
+          showToast(`Ruta de ${CONFIG_CAMPOS[clave].etiqueta} restablecida al valor por defecto`);
           reintentarCarga(clave);
+          cerrarConfigSiEsperaSucursal(clave);
         })
         .catch(() => showToast("No se pudo restablecer la ruta"));
     }
 
-    // Después de guardar/restablecer una ruta, reintenta cargar ese dato
-    // puntual sin que el usuario tenga que recargar la página entera.
+    // Después de guardar/elegir/restablecer, reintenta cargar ese dato puntual
+    // sin que el usuario tenga que recargar la página entera. Si lo que cambió
+    // fue la carpeta, se recarga todo.
     function reintentarCarga(clave) {
+      if (clave === "carpeta_datos") {
+        cargarSucursalesInicial();
+        cargarClientesAutomatico();
+        cargarSeguimientoAutomatico(false);
+        return;
+      }
       if (clave === "clientes") cargarClientesAutomatico();
       if (clave === "seguimiento") cargarSeguimientoAutomatico(false);
+      if (clave === "sucursales") cargarSucursalesInicial();
+    }
+
+    // Si todavía estamos en la pantalla de elegir sucursal (porque el archivo
+    // no se pudo leer), al arreglar la ruta cerramos el modal solo: lo que el
+    // usuario quiere ver es la lista de sucursales, no la configuración.
+    function cerrarConfigSiEsperaSucursal(clave) {
+      if (clave !== "sucursales" && clave !== "carpeta_datos") return;
+      const overlay = document.getElementById("sucursal-overlay");
+      if (overlay.classList.contains("hidden")) return;
+      setTimeout(cerrarConfigModal, 700);
     }
 
     function abrirConfigModal(claveAResaltar, mensaje) {
       document.getElementById("config-overlay").classList.remove("hidden");
       cargarEstadoConfig();
       if (mensaje) showToast(mensaje);
-      if (claveAResaltar) {
+      document.querySelectorAll(".config-field.destacado")
+        .forEach(c => c.classList.remove("destacado"));
+      if (claveAResaltar && CONFIG_CAMPOS[claveAResaltar]) {
         const el = elementosCampoConfig(claveAResaltar);
-        setTimeout(() => el.input.focus(), 50);
+        el.campo.classList.add("destacado");
+        setTimeout(() => {
+          el.campo.scrollIntoView({ block: "nearest" });
+          el.input.focus();
+        }, 50);
       }
     }
 
@@ -3554,8 +3944,9 @@
       }
     });
 
-    Object.keys(CONFIG_ETIQUETAS).forEach(clave => {
+    CONFIG_CLAVES.forEach(clave => {
       const el = elementosCampoConfig(clave);
+      el.btnElegir.addEventListener("click", () => elegirRutaConfig(clave));
       el.btnGuardar.addEventListener("click", () => guardarRutaConfig(clave));
       el.btnRestablecer.addEventListener("click", () => restablecerRutaConfig(clave));
       el.input.addEventListener("keydown", e => {
@@ -3569,6 +3960,245 @@
     initMap();
     logInitMap();
     cargarSucursalesInicial();
+  </script>
+  <script>
+    (function () {
+      "use strict";
+      const $ = id => document.getElementById(id);
+      const R = { tipos: null, flota: null, hoja: null, map: null, capa: null };
+      const COLORES = ["#2563eb", "#dc2626", "#16a34a", "#9333ea", "#ea580c", "#0891b2", "#ca8a04", "#be185d"];
+      const norm = t => String(t == null ? "" : t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+      const ksuc = t => norm(t).replace("paladini s.a.", " ").replace("sucursal", " ").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+      const mismaSuc = (a, b) => { const x = ksuc(a), y = ksuc(b); return !!x && !!y && (x === y || x.includes(y) || y.includes(x)); };
+      const val = (row, k) => { const f = Object.keys(row).find(h => norm(h) === k); return f ? row[f] : ""; };
+      const f1 = n => (Math.round(n * 10) / 10).toLocaleString("es-AR");
+      const pad = n => String(n).padStart(2, "0");
+      const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+      /*ALGO*/
+      const dist = (a, b) => {
+        const r = Math.PI / 180, dl = (b[0] - a[0]) * r, dn = (b[1] - a[1]) * r;
+        const h = Math.sin(dl / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin(dn / 2) ** 2;
+        return 12742.0176 * Math.asin(Math.sqrt(h));
+      };
+      const sumKg = g => g.reduce((s, p) => s + p.kg, 0);
+      // D = matriz de km (índice 0 = sucursal; cada parada trae su índice "ix").
+      // Llena camiones (de mayor a menor) con clientes cercanos entre sí sin pasar la capacidad,
+      // asigna cada grupo al camión más chico donde entra y ordena por vecino más cercano.
+      function planificar(paradas, camiones, D) {
+        let pend = paradas.slice(); const grupos = [];
+        for (const cam of camiones.slice().sort((a, b) => b.cap - a.cap)) {
+          if (!pend.length) break;
+          let libre = cam.cap, c = pend.filter(p => p.kg <= libre);
+          if (!c.length) continue;
+          const sem = c.reduce((m, p) => D[0][p.ix] > D[0][m.ix] ? p : m);
+          const g = [sem]; pend = pend.filter(p => p !== sem); libre -= sem.kg;
+          for (; ;) {
+            c = pend.filter(p => p.kg <= libre); if (!c.length) break;
+            const prom = x => g.reduce((s, q) => s + D[q.ix][x.ix], 0) / g.length;
+            const sig = c.reduce((m, p) => prom(p) < prom(m) ? p : m);
+            g.push(sig); pend = pend.filter(p => p !== sig); libre -= sig.kg;
+          }
+          grupos.push(g);
+        }
+        const libres = camiones.slice().sort((a, b) => a.cap - b.cap), rutas = [];
+        for (const g of grupos.sort((a, b) => sumKg(b) - sumKg(a))) {
+          const cam = libres.find(c => c.cap >= sumKg(g)); libres.splice(libres.indexOf(cam), 1);
+          let resto = g.slice(), act = 0, acum = 0; const ps = [];
+          while (resto.length) {
+            const sig = resto.reduce((m, p) => D[act][p.ix] < D[act][m.ix] ? p : m); resto = resto.filter(p => p !== sig);
+            const t = D[act][sig.ix]; acum += t; ps.push({ ...sig, tramo: t, acum }); act = sig.ix;
+          }
+          const vuelta = D[act][0];
+          rutas.push({ cam, paradas: ps, kg: sumKg(g), vuelta, km: acum + vuelta });
+        }
+        const maxCap = Math.max(...camiones.map(c => c.cap));
+        const sin = pend.map(p => ({ ...p, motivo: p.kg > maxCap ? "Pedido más pesado que cualquier camión" : "Sin capacidad de flota (1 viaje por camión)" }));
+        return { rutas, sin };
+      }
+      /*FIN*/
+
+      const fmtMin = m => `${Math.floor(m / 60)} h ${pad(Math.round(m % 60))} min`;
+      // Pedido al servidor local (app_visor.py), que consulta OSRM y cachea.
+      async function osrm(servicio, body) {
+        const r = await fetch("/api/osrm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ servicio, ...body }) });
+        let j = {}; try { j = await r.json(); } catch (e) { }
+        if (!r.ok || j.error) throw new Error(j.error || ("HTTP " + r.status));
+        return j;
+      }
+      // Matriz de km por calles entre todos los puntos, en bloques (el servidor público admite ~100 puntos por pedido).
+      async function matriz(co) {
+        const n = co.length, B = 45, D = Array.from({ length: n }, () => Array(n).fill(0)); let nulos = 0;
+        for (let i = 0; i < n; i += B) for (let j = 0; j < n; j += B) {
+          const fi = [], fj = [];
+          for (let k = i; k < Math.min(i + B, n); k++) fi.push(k);
+          for (let k = j; k < Math.min(j + B, n); k++) fj.push(k);
+          const idx = [...new Set([...fi, ...fj])], pos = new Map(idx.map((k, p) => [k, p]));
+          const res = await osrm("table", { coords: idx.map(k => co[k]), sources: fi.map(k => pos.get(k)), destinations: fj.map(k => pos.get(k)) });
+          fi.forEach((a, r) => fj.forEach((b, c) => {
+            const v = res.distances[r][c];
+            if (v == null) { nulos++; D[a][b] = dist(co[a], co[b]); } else D[a][b] = v / 1000;
+          }));
+        }
+        if (nulos) D.nulos = nulos;
+        return D;
+      }
+
+      function parsear(text) {
+        text = text.replace(/^\uFEFF/, "");
+        const r = Papa.parse(text, { header: true, skipEmptyLines: true, delimiter: logDetectDelimiter(text) });
+        return logNormalizeHeaders(r.data);
+      }
+      function estado(ok, msg) { $("rutas-dot").className = "log-datos-dot " + (ok ? "ok" : "error"); $("rutas-datos-texto").textContent = msg; }
+
+      async function cargarFlota() {
+        try {
+          const [rt, rf] = await Promise.all([fetch("/api/tipos"), fetch("/api/flota")]);
+          if (!rt.ok || !rf.ok) throw new Error("No encontré " + (!rt.ok ? "tipos_camion.csv " : "") + (!rf.ok ? "flota.csv" : "") + " en la carpeta de datos");
+          const tipos = new Map();
+          parsear(await rt.text()).forEach(r => tipos.set(norm(val(r, "tipo")), { cap: logParseNumber(val(r, "capacidad_planificacion_kg")), aut: logParseNumber(val(r, "autonomia_km")) }));
+          R.tipos = tipos; R.flota = parsear(await rf.text());
+          if (!R.flota.length) throw new Error("flota.csv está vacío: cargá patentes, sucursal y tipo");
+          estado(true, `Flota: ${R.flota.length} camiones · ${tipos.size} tipos`);
+        } catch (e) { R.flota = null; estado(false, e.message); }
+      }
+
+      function llenarSelectores() {
+        const ss = stateLog.sucursales || [], sel = $("rutas-sucursal"), previa = sel.value;
+        sel.innerHTML = ss.map((s, i) => `<option value="${i}">${s.sucursal}</option>`).join("");
+        const idx = sucursalSeleccionada ? ss.findIndex(s => s.sucursal === sucursalSeleccionada.sucursal) : -1;
+        sel.value = previa !== "" && ss[previa] ? previa : String(Math.max(idx, 0));
+        const fechas = new Map();
+        (stateLog.segRows || []).forEach(r => { const d = logParseFecha(r.InicioTransp); if (d) fechas.set(iso(d), d); });
+        const ord = [...fechas.keys()].sort().reverse(), fs = $("rutas-fecha"), fp = fs.value;
+        fs.innerHTML = ord.map(k => `<option value="${k}">${pad(fechas.get(k).getDate())}/${pad(fechas.get(k).getMonth() + 1)}/${fechas.get(k).getFullYear()}</option>`).join("");
+        if (fp && ord.includes(fp)) fs.value = fp;
+      }
+
+      function banner(msgs) { const b = $("rutas-banner"); $("rutas-banner-text").innerHTML = msgs.join("<br>"); b.classList.toggle("visible", msgs.length > 0); }
+
+      async function generar() {
+        const suc = (stateLog.sucursales || [])[+$("rutas-sucursal").value], fecha = $("rutas-fecha").value;
+        if (!suc || !fecha) return showToast("Elegí sucursal y fecha");
+        if (!stateLog.geoRows || !stateLog.segRows) return showToast("Todavía no se cargaron clientes y seguimiento");
+        if (!R.flota) return showToast("Falta la flota (flota.csv y tipos_camion.csv)");
+        const avisos = [];
+        const camiones = [];
+        R.flota.filter(r => mismaSuc(val(r, "sucursal"), suc.sucursal)).forEach(r => {
+          const t = R.tipos.get(norm(val(r, "tipo")));
+          if (!t || !(t.cap > 0)) avisos.push(`Camión ${val(r, "patente")}: tipo "${val(r, "tipo")}" no existe en tipos_camion.csv (se ignora).`);
+          else camiones.push({ patente: val(r, "patente"), tipo: String(val(r, "tipo")).toUpperCase(), cap: t.cap, aut: t.aut });
+        });
+        if (!camiones.length) { banner([...avisos, "No hay camiones cargados para esta sucursal en flota.csv."]); return; }
+        const geo = new Map();
+        stateLog.geoRows.forEach(r => geo.set(String(val(r, "id_cliente")).trim(), { co: [logParseNumber(val(r, "latitude")), logParseNumber(val(r, "longitude"))], suc: val(r, "sucursal_asignada") }));
+        const por = new Map(); let otra = 0, sinGeo = 0;
+        stateLog.segRows.forEach(r => {
+          const d = logParseFecha(r.InicioTransp); if (!d || iso(d) !== fecha) return;
+          const id = String(r.id_cliente).trim(); const p = por.get(id) || { id, nombre: r.Cliente || "", kg: 0, fact: [] };
+          p.kg += logParseNumber(r.KGTotal); p.fact.push(r.Factura); por.set(id, p);
+        });
+        const paradas = [];
+        por.forEach(p => {
+          const g = geo.get(p.id);
+          if (!g) sinGeo++; else if (!mismaSuc(g.suc, suc.sucursal)) otra++; else paradas.push({ ...p, co: g.co });
+        });
+        if (otra) avisos.push(`${otra} cliente(s) del día pertenecen a otra sucursal y se omitieron.`);
+        if (sinGeo) avisos.push(`${sinGeo} cliente(s) del día no están en el archivo de clientes: revisar.`);
+        if (!paradas.length) { banner([...avisos, "No hay pedidos para esa sucursal y fecha."]); return; }
+        const depot = [suc.latitude, suc.longitude], pts = [depot, ...paradas.map(p => p.co)];
+        paradas.forEach((p, i) => { p.ix = i + 1; });
+        $("rutas-btn-generar").disabled = true; banner(["Consultando OSRM (rutas por calles)…"]);
+        let D, modo = "osrm";
+        try {
+          D = await matriz(pts);
+          if (D.nulos) avisos.push(`${D.nulos} tramo(s) sin ruta en OSRM: se usó línea recta para ellos.`);
+        } catch (e) {
+          modo = "recta"; D = pts.map(a => pts.map(b => dist(a, b)));
+          avisos.push(`<b>OSRM no disponible</b> (${e.message}): se usó distancia en línea recta.`);
+        }
+        const plan = planificar(paradas, camiones, D);
+        if (modo === "osrm") for (const r of plan.rutas) {
+          try {
+            const q = await osrm("route", { coords: [depot, ...r.paradas.map(p => p.co), depot] }), rt = q.routes[0];
+            r.geo = rt.geometry.coordinates.map(c => [c[1], c[0]]); r.min = rt.duration / 60;
+          } catch (e) { avisos.push(`Ruta de ${r.cam.patente}: no se pudo trazar por calles (${e.message}).`); }
+        }
+        $("rutas-btn-generar").disabled = false;
+        plan.rutas.forEach(r => { if (r.cam.aut > 0 && r.km > r.cam.aut) avisos.push(`${r.cam.patente}: la ruta (${f1(r.km)} km) supera su autonomía estimada.`); });
+        if (plan.sin.length) avisos.push(`<b>${plan.sin.length} cliente(s) sin asignar:</b> ` + plan.sin.map(p => `${p.nombre || p.id} (${f1(p.kg)} kg — ${p.motivo})`).join("; "));
+        avisos.push((modo === "osrm" ? "Km por calles (OSRM, perfil auto: no distingue camiones)" : "Km en línea recta") + ", sin horarios de clientes ni restricciones por zona (V1).");
+        R.hoja = { suc, fecha, depot, modo, ...plan, flotaTotal: camiones.length };
+        banner(avisos); render();
+      }
+
+      function render() {
+        const h = R.hoja, rs = h.rutas;
+        $("rutas-empty").style.display = "none"; $("rutas-kpis").style.display = ""; $("rutas-toggle").style.display = ""; $("rutas-export").style.display = "";
+        $("rk-camiones").textContent = `${rs.length}/${h.flotaTotal}`;
+        $("rk-clientes").textContent = rs.reduce((s, r) => s + r.paradas.length, 0);
+        $("rk-sin").textContent = h.sin.length;
+        $("rk-km-label").textContent = h.modo === "osrm" ? "Km por calles (OSRM)" : "Km (línea recta)";
+        $("rk-km").textContent = f1(rs.reduce((s, r) => s + r.km, 0));
+        $("rk-kg").textContent = f1(rs.reduce((s, r) => s + r.kg, 0));
+        let t = "";
+        rs.forEach((r, i) => {
+          t += `<tr><td colspan="6" style="background:var(--c-bg);font-weight:600"><span style="color:${COLORES[i % 8]}">●</span> ${r.cam.patente} · ${r.cam.tipo} · ${f1(r.kg)} / ${f1(r.cam.cap)} kg (${Math.round(100 * r.kg / r.cam.cap)}%) · ${f1(r.km)} km${r.min ? " · " + fmtMin(r.min) + " de manejo" : ""}</td></tr>`;
+          r.paradas.forEach((p, j) => { t += `<tr><td>${j + 1}</td><td>${p.id}</td><td>${p.nombre}</td><td>${f1(p.kg)}</td><td>${f1(p.tramo)}</td><td>${f1(p.acum)}</td></tr>`; });
+          t += `<tr><td></td><td colspan="3">Vuelta a sucursal</td><td>${f1(r.vuelta)}</td><td>${f1(r.km)}</td></tr>`;
+        });
+        $("rutas-tbody").innerHTML = t;
+        initMap(); R.capa.clearLayers();
+        const pts = [h.depot];
+        L.circleMarker(h.depot, { radius: 9, color: "#1a1c1e", fillColor: "#fff", fillOpacity: 1, weight: 3 }).bindPopup("<b>" + h.suc.sucursal + "</b>").addTo(R.capa);
+        rs.forEach((r, i) => {
+          const c = COLORES[i % 8], linea = [h.depot, ...r.paradas.map(p => p.co), h.depot];
+          L.polyline(r.geo || linea, { color: c, weight: 3, opacity: .8 }).addTo(R.capa);
+          r.paradas.forEach((p, j) => {
+            pts.push(p.co);
+            L.marker(p.co, { icon: L.divIcon({ className: "", html: `<div class="ruta-pin" style="background:${c}">${j + 1}</div>`, iconSize: [22, 22] }) })
+              .bindPopup(`<b>${p.nombre || p.id}</b><br>${r.cam.patente} · parada ${j + 1}<br>${f1(p.kg)} kg · +${f1(p.tramo)} km`).addTo(R.capa);
+          });
+        });
+        setTimeout(() => { R.map.invalidateSize(); R.map.fitBounds(pts, { padding: [40, 40] }); }, 60);
+      }
+
+      function initMap() {
+        if (R.map) return;
+        R.map = L.map("map-rutas", { zoomControl: true }).setView([-38.95, -68.06], 9);
+        L.tileLayer("https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap", maxZoom: 19 }).addTo(R.map);
+        R.capa = L.layerGroup().addTo(R.map);
+      }
+
+      function vista(v) {
+        $("rutas-btn-mapa").classList.toggle("active", v === "mapa"); $("rutas-btn-tabla").classList.toggle("active", v === "tabla");
+        $("rutas-map-view").style.display = v === "mapa" ? "flex" : "none"; $("rutas-table-view").classList.toggle("visible", v === "tabla");
+        if (v === "mapa" && R.map) setTimeout(() => R.map.invalidateSize(), 50);
+      }
+
+      function descargar() {
+        const h = R.hoja; if (!h) return;
+        const n = x => String(Math.round(x * 100) / 100).replace(".", ",");
+        const f = [["fecha", "sucursal", "patente", "tipo", "capacidad_kg", "orden", "id_cliente", "cliente", "facturas", "kg", "km_tramo", "km_acumulado"]];
+        h.rutas.forEach(r => {
+          r.paradas.forEach((p, j) => f.push([h.fecha, h.suc.sucursal, r.cam.patente, r.cam.tipo, r.cam.cap, j + 1, p.id, p.nombre, p.fact.join(" "), n(p.kg), n(p.tramo), n(p.acum)]));
+          f.push([h.fecha, h.suc.sucursal, r.cam.patente, r.cam.tipo, r.cam.cap, "VUELTA", "", "SUCURSAL", "", "", n(r.vuelta), n(r.km)]);
+        });
+        const csv = "\uFEFF" + f.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        a.download = `hoja_ruta_${ksuc(h.suc.sucursal).replace(/ /g, "_")}_${h.fecha}.csv`; a.click();
+      }
+
+      $("tab-btn-rutas").addEventListener("click", () => {
+        ["visor", "logistica", "rutas"].forEach(k => { $("tab-btn-" + k).classList.toggle("active", k === "rutas"); $("view-" + k).classList.toggle("active", k === "rutas"); });
+        llenarSelectores(); cargarFlota(); initMap(); setTimeout(() => R.map.invalidateSize(), 50);
+      });
+      $("rutas-btn-generar").addEventListener("click", generar);
+      $("rutas-btn-csv").addEventListener("click", descargar);
+      $("rutas-btn-mapa").addEventListener("click", () => vista("mapa"));
+      $("rutas-btn-tabla").addEventListener("click", () => vista("tabla"));
+      window.__rutasPlanificar = planificar;
+    })();
   </script>
 </body>
 

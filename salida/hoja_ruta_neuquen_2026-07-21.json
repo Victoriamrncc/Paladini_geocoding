@@ -1,0 +1,249 @@
+{
+  "fecha": "2026-07-21",
+  "sucursal": "Paladini S.A. - Sucursal Neuquén",
+  "sucursal_coord": {
+    "latitude": -38.9583571,
+    "longitude": -68.1242893
+  },
+  "aviso_metodo": "Km en línea recta (sin OSRM), sin horarios de clientes, sin restricciones por zona.",
+  "resumen": {
+    "viajes": 2,
+    "camiones_disponibles": 3,
+    "clientes_asignados": 15,
+    "clientes_sin_asignar": 0,
+    "km_total_linea_recta": 1520.94,
+    "kg_total": 9301.85
+  },
+  "rutas": [
+    {
+      "patente": "PRUEBA1",
+      "tipo": "Z1",
+      "viaje": 1,
+      "capacidad_kg": 8000.0,
+      "kg_cargados": 5595.81,
+      "ocupacion_pct": 69.9,
+      "paradas": [
+        {
+          "orden": 1,
+          "id_cliente": "65752",
+          "cliente": "DISTRIBUIDORA ORTIZ HNOS.",
+          "facturas": [
+            "7754141063",
+            "7272572358"
+          ],
+          "kg": 176.45,
+          "latitude": -38.946247,
+          "longitude": -68.214128,
+          "km_tramo": 7.88,
+          "km_acumulado": 7.88
+        },
+        {
+          "orden": 2,
+          "id_cliente": "22303",
+          "cliente": "AGUIRRE FEDERICO ANTONELLA",
+          "facturas": [
+            "7408646665"
+          ],
+          "kg": 343.63,
+          "latitude": -38.936863,
+          "longitude": -68.222013,
+          "km_tramo": 1.25,
+          "km_acumulado": 9.13
+        },
+        {
+          "orden": 3,
+          "id_cliente": "99312",
+          "cliente": "INSUMOS MOLINA & CÍA.",
+          "facturas": [
+            "7341380668"
+          ],
+          "kg": 150.41,
+          "latitude": -38.936839,
+          "longitude": -68.228156,
+          "km_tramo": 0.53,
+          "km_acumulado": 9.66
+        },
+        {
+          "orden": 4,
+          "id_cliente": "72769",
+          "cliente": "DISTRIBUIDORA RUIZ S.R.L.",
+          "facturas": [
+            "7321087680"
+          ],
+          "kg": 31.76,
+          "latitude": -38.946743,
+          "longitude": -68.253881,
+          "km_tramo": 2.48,
+          "km_acumulado": 12.14
+        },
+        {
+          "orden": 5,
+          "id_cliente": "50919",
+          "cliente": "RAMÍREZ TOMÁS GONZALO",
+          "facturas": [
+            "7165119630"
+          ],
+          "kg": 866.93,
+          "latitude": -38.599306,
+          "longitude": -68.349512,
+          "km_tramo": 39.51,
+          "km_acumulado": 51.66
+        },
+        {
+          "orden": 6,
+          "id_cliente": "19585",
+          "cliente": "ROJAS SANTIAGO ROCÍO",
+          "facturas": [
+            "7695296770",
+            "7509362707"
+          ],
+          "kg": 75.36,
+          "latitude": -38.120639,
+          "longitude": -68.510079,
+          "km_tramo": 55.04,
+          "km_acumulado": 106.69
+        },
+        {
+          "orden": 7,
+          "id_cliente": "77744",
+          "cliente": "ÁLVAREZ JULIÁN VALENTINA",
+          "facturas": [
+            "7152355731"
+          ],
+          "kg": 62.08,
+          "latitude": -39.026153,
+          "longitude": -67.59676,
+          "km_tramo": 128.23,
+          "km_acumulado": 234.92
+        },
+        {
+          "orden": 8,
+          "id_cliente": "78070",
+          "cliente": "KIOSCO HERRERA S.H.",
+          "facturas": [
+            "7044655412"
+          ],
+          "kg": 326.84,
+          "latitude": -39.030224,
+          "longitude": -67.591128,
+          "km_tramo": 0.66,
+          "km_acumulado": 235.58
+        },
+        {
+          "orden": 9,
+          "id_cliente": "47649",
+          "cliente": "RAMÍREZ TOMÁS EMILIO",
+          "facturas": [
+            "7317067202"
+          ],
+          "kg": 282.02,
+          "latitude": -39.029005,
+          "longitude": -67.583615,
+          "km_tramo": 0.66,
+          "km_acumulado": 236.25
+        },
+        {
+          "orden": 10,
+          "id_cliente": "12683",
+          "cliente": "INSUMOS ÁLVAREZ HNOS.",
+          "facturas": [
+            "7031689106",
+            "7578850369",
+            "7030513669"
+          ],
+          "kg": 2836.87,
+          "latitude": -39.057436,
+          "longitude": -67.579051,
+          "km_tramo": 3.19,
+          "km_acumulado": 239.43
+        },
+        {
+          "orden": 11,
+          "id_cliente": "16316",
+          "cliente": "ORTIZ MATEO RAMIRO",
+          "facturas": [
+            "7202612020"
+          ],
+          "kg": 222.61,
+          "latitude": -39.097216,
+          "longitude": -67.081085,
+          "km_tramo": 43.21,
+          "km_acumulado": 282.64
+        },
+        {
+          "orden": 12,
+          "id_cliente": "38818",
+          "cliente": "ROMERO MILAGROS FRANCO",
+          "facturas": [
+            "7019099788",
+            "7849055730"
+          ],
+          "kg": 73.16,
+          "latitude": -39.443818,
+          "longitude": -70.096403,
+          "km_tramo": 262.4,
+          "km_acumulado": 545.05
+        },
+        {
+          "orden": 13,
+          "id_cliente": "68254",
+          "cliente": "MERCADO TORRES HNOS.",
+          "facturas": [
+            "7673103851"
+          ],
+          "kg": 73.77,
+          "latitude": -40.843839,
+          "longitude": -71.03916,
+          "km_tramo": 175.09,
+          "km_acumulado": 720.13
+        },
+        {
+          "orden": 14,
+          "id_cliente": "44736",
+          "cliente": "ALMACÉN MARTÍNEZ S.R.L.",
+          "facturas": [
+            "7572750586"
+          ],
+          "kg": 73.92,
+          "latitude": -37.531346,
+          "longitude": -70.198245,
+          "km_tramo": 375.39,
+          "km_acumulado": 1095.52
+        }
+      ],
+      "km_vuelta_sucursal": 240.78,
+      "km_total": 1336.3
+    },
+    {
+      "patente": "PRUEBA2",
+      "tipo": "Z3",
+      "viaje": 1,
+      "capacidad_kg": 5000.0,
+      "kg_cargados": 3706.04,
+      "ocupacion_pct": 74.1,
+      "paradas": [
+        {
+          "orden": 1,
+          "id_cliente": "23898",
+          "cliente": "DISTRIBUIDORA GODOY & CÍA.",
+          "facturas": [
+            "7381884999",
+            "7968651735",
+            "7856110879"
+          ],
+          "kg": 3706.04,
+          "latitude": -39.090585,
+          "longitude": -67.06921,
+          "km_tramo": 92.32,
+          "km_acumulado": 92.32
+        }
+      ],
+      "km_vuelta_sucursal": 92.32,
+      "km_total": 184.64
+    }
+  ],
+  "sin_asignar": [],
+  "avisos": [
+    "1 cliente(s) de otra sucursal se omitieron."
+  ]
+}
