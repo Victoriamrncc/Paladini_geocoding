@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hoja de ruta</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <!-- PapaParse -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <link rel="stylesheet" href="/ruta.css" />
+</head>
+
+<body>
+  <header>
+    <span class="logo-dot"></span>
+    <h1>Hoja de ruta</h1>
+    <span class="subtitle">Planificación de reparto</span>
+  </header>
+
+  <div class="app-body">
+    <aside>
+      <div class="sidebar-scroll">
+        <section>
+          <h2 class="section-label">Datos</h2>
+          <div class="datos">
+            <span class="dot" id="datos-dot"></span>
+            <span id="datos-texto">Cargando datos…</span>
+          </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section>
+          <h2 class="section-label">Planificación</h2>
+          <div class="campos">
+            <div class="campo">
+              <label for="sel-sucursal">Sucursal</label>
+              <select id="sel-sucursal"></select>
+            </div>
+            <div class="campo">
+              <label for="sel-fecha">Fecha</label>
+              <select id="sel-fecha"></select>
+            </div>
+            <label class="chk"><input type="checkbox" id="chk-todos" /><span>Mostrar todos los clientes</span></label>
+            <div class="resumen" id="resumen"></div>
+          </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section>
+          <h2 class="section-label">Camiones a usar</h2>
+          <div class="campos">
+            <details class="dd" id="dd">
+              <summary id="dd-resumen">Camiones</summary>
+              <div class="dd-lista" id="dd-lista"></div>
+            </details>
+            <button class="btn-primary" id="btn-generar" type="button">Generar hoja de ruta</button>
+            <div class="plan-estado" id="plan-estado"></div>
+          </div>
+        </section>
+
+        <section id="sec-export" hidden>
+          <div class="divider"></div>
+          <h2 class="section-label" style="margin-top:18px">Exportar</h2>
+          <button class="btn-secondary" id="btn-csv" type="button">Descargar CSV</button>
+        </section>
+      </div>
+    </aside>
+
+    <main>
+      <div class="banner" id="banner"></div>
+      <div class="kpis" id="kpis" hidden></div>
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="leyenda" id="leyenda" hidden></div>
+        <div class="empty" id="empty"><p id="empty-texto">Cargando…</p></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <h2 id="modal-titulo">Resumen de la planificación</h2>
+      <div class="modal-resumen" id="modal-resumen"></div>
+      <div class="modal-avisos" id="modal-avisos"></div>
+      <div class="modal-acciones">
+        <button class="btn-secondary" id="modal-cancelar" type="button">Cancelar</button>
+        <button class="btn-primary" id="modal-confirmar" type="button">Confirmar y descargar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="/ruta_logica.js"></script>
+  <script src="/ruta_algoritmo.js"></script>
+  <script src="/ruta_app.js"></script>
+</body>
+
+</html>
